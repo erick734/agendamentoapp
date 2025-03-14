@@ -1,4 +1,4 @@
-body {
+/*body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -10,4 +10,19 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}*/
+
+.header {
+  display: flex;
+  justify-content: center; /* Centraliza os itens horizontalmente */
+  align-items: center;     /* Centraliza os itens verticalmente */
+  padding: 1.1em 20;        /* Ajusta o padding para não aplicar muito espaço lateral */
+  text-align: center;      /* Garantir que o conteúdo do header também fique centralizado */
+}
+
+nav {
+  display: flex;           /* Habilita o flexbox */
+  justify-content: center; /* Centraliza os links dentro do nav */
+  align-items: center;     /* Centraliza verticalmente os links dentro do nav */
+  gap: 20px;               /* Espaço entre os links */
 }

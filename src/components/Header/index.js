@@ -2,7 +2,7 @@ import HeaderLink from '../HeaderLink'
 import style from './header.module.css'
 
 export default function Header() {
-    return (
+    return (/*
         <header className={`${style.header} bg-dark`}>
             <nav>
                 <HeaderLink url="./">
@@ -12,6 +12,9 @@ export default function Header() {
                     Cadastro
                 </HeaderLink>
             </nav>
-        </header>
+        </header>*/
+        <h1>
+
+        </h1>
     )
 }
