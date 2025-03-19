@@ -4,3 +4,10 @@
     align-items: center;
     padding: 1.1em 20em;
 }
+
+.desloga-botao {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+  }
+  

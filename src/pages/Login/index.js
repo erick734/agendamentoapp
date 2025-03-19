@@ -1,54 +1,58 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom";
 import { UsuarioContext, useUsuarioContext } from "../../context/Usuario";
+
 
 export default function Login() {
 
-  const [usuarioInformado, setUsuario] = useState("");
+  const [usuarioInformado, setUsuarios] = useState("");
   const [senha, setSenha] = useState("");
   const { login } = useUsuarioContext(UsuarioContext);
+  const navigate = useNavigate();
 
-  function loginSubmit() {
+  async function loginSubmit(e) {
+    e.preventDefault();
 
-    if (usuarioInformado === "erick" && senha === "1") {
-      login({ nome: usuarioInformado, usuarioInformado, logado: true })
-    } else {
-      alert("SE-FODEU!");
+    try {
+      const response = await fetch("http://viacep.com.br/ws/88845000/json/",{
+        method: "GET"
+      });
+
+      if(!response.ok){
+        alert("deu erro");
+      }
+
+      const data =await response.json();
+      alert(JSON.stringify(data));
+
+
+
+
+
+      if (usuarioInformado === "e" && senha === "1") {
+        login({ nome: usuarioInformado, usuarioInformado, logado: true });
+        navigate("/")
+      }
+      else {
+        alert("Ta errado")
+      }
+
+    } catch (error) {
+      alert("Erro ao comunicar com o servidor")
     }
   }
 
-  <form onSubmit={loginSubmit}>
-    <div className="mb-3">
-      <label htmlFor="usuario" className="form-label">
-        Usuário:
-      </label>
-      <input
-        type="text"
-        value={usuarioInformado}
-        onChange={(e) => setUsuario(e.target.value)}
-        className="form-control"
-        id="usuario"
-        name="usuario"
-        placeholder="Digite seu nome"
-      />
-    </div>
+  return (
+    <form onSubmit={loginSubmit}>
+      <h1 className="text-center fw-bold mt-2">Login</h1>
+      <div className="container mt-5 bg-dark pb-5">
 
-    <div className="mb-3">
-      <label htmlFor="evento" className="form-label">
-        Senha:
-      </label>
-      <input
-        type="password"
-        value={usuarioInformado}
-        onChange={(e) => setSenha(e.target.value)}
-        className="form-control"
-        id="evento"
-        name="evento"
-        placeholder="Digite o evento"
-      />
-    </div>
-
-    <button type="submit" className="btn btn-primary w-100">
-      Login
-    </button>
-  </form>
+        <label className="text-light">Usuario: </label>
+        <input type="text" value={usuarioInformado} onChange={(e) => setUsuarios(e.target.value)} className="form-control"></input>
+        <label className="text-light">Senha: </label>
+        <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} className="form-control"></input>
+        <button type="submit" className="btn btn-primary mt-2 col-md-2 text-center w-100">Entrar</button>
+      </div>
+    </form>
+  )
 }

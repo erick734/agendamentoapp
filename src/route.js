@@ -11,8 +11,8 @@ import UsuarioLogadoProvider, { UsuarioContext } from "./context/Usuario";
 import { useContext } from "react";
 
 function PrivateRoute({ children }) {
-    
-    const usuario = useContext(UsuarioContext);
+
+    const { usuario } = useContext(UsuarioContext);
     if (!usuario?.logado) {
         return <Navigate to="/login" replace />
     }
@@ -27,11 +27,17 @@ export default function AppRoutes() {
 
                 <Routes>
                     <Route path="/login" element={<Login />} ></Route>
-                    <Route path="/"
+                    <Route path="/*"
                         element={
                             <PrivateRoute>
-                                <Route path="/home" element={<Home />} ></Route>
-                                <Route path="/cadastro" element={<Cadastro />} ></Route>
+                                <ProtecedLayout>
+                                <Routes>
+                                        <Route path="/" element={<Home />} />
+                                        <Route path="/cadastro" element={<Cadastro />} />
+                                        <Route path="/consulta" element={<Consulta />} />
+                                        <Route path="/agendamento" element={<AgendamentoConsulta />} />
+                                    </Routes>
+                                </ProtecedLayout>
                             </PrivateRoute>
                         }
                     />
@@ -39,11 +45,21 @@ export default function AppRoutes() {
             </UsuarioLogadoProvider>
         </BrowserRouter>
     )
-    /*
-    <Header />
-    <div className="d-flex">
-    <SideBar />
-    <div className="flex-grow-1 p-4">
-    */
+
+    function ProtecedLayout({ children }) {
+        return (
+            <>
+
+            <Header />
+                <div className="d-flex">
+                <SideBar />
+                <div className="flex-grow-1 p-4">
+                    {children}
+                </div>
+            </div>
+            <Footer />
+        </>
+    );
+}
 
 }
