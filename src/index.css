@@ -1,10 +1,13 @@
+
+
 .header {
-  display: flex;
-  justify-content: center;
-  align-items: center;    
-  padding: 1.1em 20;       
-  text-align: center;      
+  background-color: black; /* Cor preta para a barra */
+  height: 50px; /* Altura da barra */
+  padding: 0 10px; /* Espaçamento interno */
+  width: auto; /* Ajusta ao conteúdo, mas pode ser 100% se preferir */
+  z-index: 1000; /* Fica acima de outros elementos */
 }
+
 
 nav {
   display: flex;

@@ -1,7 +1,9 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom";
 import { UsuarioContext, useUsuarioContext } from "../../context/Usuario";
+import { Alert } from "bootstrap";
 
+import axios from "axios";
 
 export default function Login() {
 
@@ -14,27 +16,15 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://viacep.com.br/ws/88845000/json/",{
-        method: "GET"
-      });
 
-      if(!response.ok){
-        alert("deu erro");
-      }
+      debugger;
+      const responseAxios1 = await axios.get("http://localhost:3001/usuario/?usuario=" + usuarioInformado + "&senha=" + senha)
 
-      const data =await response.json();
-      alert(JSON.stringify(data));
-
-
-
-
-
-      if (usuarioInformado === "e" && senha === "1") {
-        login({ nome: usuarioInformado, usuarioInformado, logado: true });
+      if (responseAxios1.data.length > 0) {
+        login({ nome: usuarioInformado, usuarioInformado, logado: true })
         navigate("/")
-      }
-      else {
-        alert("Ta errado")
+      } else {
+        alert("TENTE NOVAMENTE")
       }
 
     } catch (error) {

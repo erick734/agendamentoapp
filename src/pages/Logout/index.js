@@ -9,10 +9,13 @@ export default function DeslogaBotao(){
     }
   
     return (
-        <button 
-            onClick={handleLogout} 
-            className="btn btn-danger desloga-botao">
-            Sair
-        </button>
+        <div className="position-fixed top-0 end-0 p-2">
+            <button
+                onClick={handleLogout}
+                className="btn btn-danger btn-sm"
+            >
+                Sair
+            </button>
+        </div>
     );
 }
