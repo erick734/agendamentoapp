@@ -24,18 +24,19 @@ export default function AppRoutes() {
     return (
         <BrowserRouter>
             <UsuarioLogadoProvider>
-
                 <Routes>
-                    <Route path="/login" element={<Login />} ></Route>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/cadastro" element={<Cadastro />} />
+
+
                     <Route path="/*"
                         element={
                             <PrivateRoute>
                                 <ProtecedLayout>
-                                <Routes>
+                                    <Routes>
                                         <Route path="/" element={<Home />} />
-                                        <Route path="/cadastro" element={<Cadastro />} />
-                                        <Route path="/consulta" element={<Consulta />} />
-                                        <Route path="/agendamento" element={<AgendamentoConsulta />} />
+                                        <Route path="/lista-consultas" element={<Consulta />} />
+                                        <Route path="/agendamento-consulta" element={<AgendamentoConsulta />} />
                                     </Routes>
                                 </ProtecedLayout>
                             </PrivateRoute>
@@ -44,22 +45,20 @@ export default function AppRoutes() {
                 </Routes>
             </UsuarioLogadoProvider>
         </BrowserRouter>
-    )
+    );
 
     function ProtecedLayout({ children }) {
         return (
             <>
-
-            <Header />
+                <Header />
                 <div className="d-flex">
-                <SideBar />
-                <div className="flex-grow-1 p-4">
-                    {children}
+                    <SideBar />
+                    <div className="flex-grow-1 p-4">
+                        {children}
+                    </div>
                 </div>
-            </div>
-            <Footer />
-        </>
-    );
-}
-
+                <Footer />
+            </>
+        );
+    }
 }

@@ -18,7 +18,7 @@ export default function Login() {
     try {
 
       debugger;
-      const responseAxios1 = await axios.get("http://localhost:3001/usuario/?usuario=" + usuarioInformado + "&senha=" + senha)
+      const responseAxios1 = await axios.get("http://localhost:3001/usuario?usuario="+usuarioInformado+ "&senha="+senha)
 
       if (responseAxios1.data.length > 0) {
         login({ nome: usuarioInformado, usuarioInformado, logado: true })
@@ -36,12 +36,18 @@ export default function Login() {
     <form onSubmit={loginSubmit}>
       <h1 className="text-center fw-bold mt-2">Login</h1>
       <div className="container mt-5 bg-dark pb-5">
-
-        <label className="text-light">Usuario: </label>
-        <input type="text" value={usuarioInformado} onChange={(e) => setUsuarios(e.target.value)} className="form-control"></input>
-        <label className="text-light">Senha: </label>
-        <input type="password" value={senha} onChange={(e) => setSenha(e.target.value)} className="form-control"></input>
+        <label className="text-light">Usuário:</label>
+        <input type="text" className="form-control" />
+        <label className="text-light">Senha:</label>
+        <input type="password" className="form-control" />
         <button type="submit" className="btn btn-primary mt-2 col-md-2 text-center w-100">Entrar</button>
+        <button
+          type="button"
+          className="btn btn-secondary mt-2 col-md-2 text-center w-100"
+          onClick={() => navigate("/cadastro")}
+        >
+          cadastrar
+        </button>
       </div>
     </form>
   )

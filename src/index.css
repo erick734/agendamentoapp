@@ -1,11 +1,11 @@
 
 
 .header {
-  background-color: black; /* Cor preta para a barra */
-  height: 50px; /* Altura da barra */
-  padding: 0 10px; /* Espaçamento interno */
-  width: auto; /* Ajusta ao conteúdo, mas pode ser 100% se preferir */
-  z-index: 1000; /* Fica acima de outros elementos */
+  background-color: black;
+  height: 50px;
+  padding: 0 10px;
+  width: auto;
+  z-index: 1000;
 }
 
 

@@ -1,10 +1,17 @@
 {
-    "usuario":[
+  "usuario": [
     {
-        "id": 2,
-        "usuario":"e",
-        "senha": 1
+      "id": "1",
+      "perfil": "a",
+      "login": "admin",
+      "senha": "admin"
     }
-    ]
-
+  ],
+  "consultas": [
+    {
+      "id": "1",
+      "usuarioId": "1",
+      "usuarioMedicoId": "1"
+    }
+  ]
 }

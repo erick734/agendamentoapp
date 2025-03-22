@@ -30,13 +30,13 @@ export default function SideBar() {
                     </a>
                     <ul className="collapse list-unstyled ms-3" id="submenuCadastro">
                         <li>
-                            <Link to="/cadastro" className="nav-link text-light">
-                                Registrar
+                            <Link to="/agendamento-consulta" className="nav-link text-light">
+                                Agendar Consulta
                             </Link>
                         </li>
                         <li>
-                            <Link to="/consulta" className="nav-link text-light">
-                                Consulta
+                            <Link to="/lista-consultas" className="nav-link text-light">
+                                Lista de Consultas
                             </Link>
                         </li>
                     </ul>
