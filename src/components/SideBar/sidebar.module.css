@@ -1,0 +1,18 @@
+.sidebar{
+    width: 250px;
+    transition: width 0.3s;
+}
+
+.sidebar .collapse{
+    width: 80px;
+}
+
+.sidebar .navlink{
+    padding: 10px;
+    font-size: 16px;
+}
+
+.sidebar .collapse .valink{
+    font-size: 14px;
+    padding-left: 16px;
+}

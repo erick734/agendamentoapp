@@ -1,0 +1,86 @@
+{
+  "usuario": [
+    {
+      "id": "562e",
+      "usuario": "e",
+      "senha": "1",
+      "perfil": "p",
+      "endereco": {
+        "cep": "88845-000",
+        "localidade": "Cocal do Sul",
+        "uf": "SC"
+      },
+      "nome": "Erick",
+      "sobrenome": "da silva",
+      "telefone": "4834473753"
+    },
+    {
+      "id": "c53e",
+      "usuario": "adm",
+      "senha": "adm",
+      "perfil": "a",
+      "endereco": {
+        "cep": "88845000",
+        "localidade": "Cocal do Sul",
+        "uf": "SC"
+      },
+      "nome": "adm",
+      "sobrenome": "1",
+      "telefone": "0"
+    },
+    {
+      "id": "4cc2",
+      "usuario": "mario",
+      "senha": "123",
+      "perfil": "m",
+      "endereco": {
+        "cep": "88845000",
+        "localidade": "Cocal do Sul",
+        "uf": "SC"
+      },
+      "nome": "Mario",
+      "sobrenome": "Jacinto pinto",
+      "telefone": "48998052592"
+    },
+    {
+      "id": "8fdc",
+      "usuario": "b",
+      "senha": "1",
+      "perfil": "p",
+      "endereco": {
+        "cep": "88845-000",
+        "localidade": "Cocal do Sul",
+        "uf": "SC"
+      },
+      "nome": "let",
+      "sobrenome": "lou",
+      "telefone": "4"
+    }
+  ],
+  "consultas": [
+    {
+      "id": "0238",
+      "horario": "00:00",
+      "usuarioMedicoId": "4cc2",
+      "telefone": "34473753",
+      "confirmada": true,
+      "cancelada": false
+    },
+    {
+      "id": "1d91",
+      "horario": "11:11",
+      "usuarioMedicoId": "4cc2",
+      "telefone": "000",
+      "confirmada": false,
+      "cancelada": false
+    },
+    {
+      "id": "7421",
+      "horario": "12:12",
+      "usuarioMedicoId": "4cc2",
+      "telefone": "34",
+      "confirmada": false,
+      "cancelada": false
+    }
+  ]
+}
