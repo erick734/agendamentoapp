@@ -4,22 +4,27 @@ import { useUsuarioContext } from "../../context/Usuario";
 import axios from "axios";
 
 export default function Login() {
-  const [usuarioInformado, setUsuarios] = useState("");
+  const [usuarioInformado, setUsuarioInformado] = useState("");
   const [senha, setSenha] = useState("");
+  const [carregando, setCarregando] = useState(false);
   const { login } = useUsuarioContext();
   const navigate = useNavigate();
 
   async function loginSubmit(e) {
     e.preventDefault();
 
-    // Verificação para garantir que os campos de usuário e senha estão preenchidos
     if (!usuarioInformado || !senha) {
       alert("Por favor, preencha todos os campos!");
       return;
     }
 
+    setCarregando(true);
+
     try {
-      const responseAxios = await axios.get(`http://localhost:3001/usuario?usuario=${usuarioInformado}&senha=${senha}`);
+      const responseAxios = await axios.get(
+        `http://localhost:3001/usuario?usuario=${usuarioInformado}&senha=${senha}`
+      );
+
       if (responseAxios.data.length > 0) {
         const usuario = responseAxios.data[0];
         login({ ...usuario, logado: true });
@@ -29,36 +34,55 @@ export default function Login() {
       }
     } catch (error) {
       alert("Erro ao comunicar com o servidor");
+    } finally {
+      setCarregando(false);
     }
   }
 
   return (
-    <form onSubmit={loginSubmit}>
-      <h1 className="text-center fw-bold mt-2">Login</h1>
-      <div className="container mt-5 bg-dark pb-5">
-        <label className="text-light">Usuário:</label>
-        <input
-          type="text"
-          className="form-control"
-          value={usuarioInformado}
-          onChange={(e) => setUsuarios(e.target.value)}
-        />
-        <label className="text-light">Senha:</label>
-        <input
-          type="password"
-          className="form-control"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-        />
-        <button type="submit" className="btn btn-primary mt-2 col-md-2 text-center w-100">Entrar</button>
+    <div className="d-flex justify-content-center align-items-center vh-100">
+      <form
+        onSubmit={loginSubmit}
+        className="p-4 bg-dark text-light rounded shadow-lg"
+        style={{ width: "350px", maxWidth: "100%", overflow: "hidden" }}
+      >
+        <h1 className="text-center fw-bold mb-4">Login</h1>
+
+        <div className="mb-3">
+          <label className="form-label">Usuário:</label>
+          <input
+            type="text"
+            className="form-control"
+            value={usuarioInformado}
+            onChange={(e) => setUsuarioInformado(e.target.value)}
+            disabled={carregando}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Senha:</label>
+          <input
+            type="password"
+            className="form-control"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            disabled={carregando}
+          />
+        </div>
+
+        <button type="submit" className="btn btn-primary w-100" disabled={carregando}>
+          {carregando ? "Entrando..." : "Entrar"}
+        </button>
+
         <button
           type="button"
-          className="btn btn-secondary mt-2 col-md-2 text-center w-100"
+          className="btn btn-secondary w-100 mt-2"
           onClick={() => navigate("/cadastro")}
+          disabled={carregando}
         >
           Cadastrar
         </button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }

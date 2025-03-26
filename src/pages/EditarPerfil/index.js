@@ -6,35 +6,52 @@ import BuscaEndereco from "../BuscaEndereco";
 
 export default function EditarPerfil() {
   const { usuario } = useContext(UsuarioContext);
+  const navigate = useNavigate();
+
   const [nome, setNome] = useState("");
   const [sobrenome, setSobrenome] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [erroTelefone, setErroTelefone] = useState("");
   const [endereco, setEndereco] = useState({});
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (usuario) {
       setNome(usuario.nome);
       setSobrenome(usuario.sobrenome);
       setTelefone(usuario.telefone);
-      setEndereco(usuario.endereco);
+      setEndereco(usuario.endereco || {});
     }
   }, [usuario]);
 
+  const validarTelefone = (numero) => {
+    const numeroLimpo = numero.replace(/\D/g, ""); // Remove caracteres não numéricos
+
+    if (numeroLimpo.length < 8 || numeroLimpo.length > 9) {
+      setErroTelefone("Número inválido. Digite 8 ou 9 números.");
+    } else if (numeroLimpo.length === 9 && numeroLimpo[0] !== "9") {
+      setErroTelefone("Celular deve começar com 9.");
+    } else {
+      setErroTelefone("");
+    }
+
+    setTelefone(numero);
+  };
+
   async function atualizarPerfil(e) {
     e.preventDefault();
-    try {
-      if (!nome || !sobrenome || !telefone || !endereco.cep) {
-        alert("Por favor, preencha todos os campos!");
-        return;
-      }
 
-      const usuarioAtualizado = {
-        nome,
-        sobrenome,
-        telefone,
-        endereco,
-      };
+    if (!nome || !sobrenome || !telefone || !endereco.cep) {
+      alert("Por favor, preencha todos os campos!");
+      return;
+    }
+
+    if (erroTelefone) {
+      alert("Corrija o número de telefone antes de continuar.");
+      return;
+    }
+
+    try {
+      const usuarioAtualizado = { nome, sobrenome, telefone, endereco };
 
       await axios.patch(`http://localhost:3001/usuario/${usuario.id}`, usuarioAtualizado);
       alert("Perfil atualizado com sucesso!");
@@ -45,72 +62,80 @@ export default function EditarPerfil() {
   }
 
   return (
-    <div className="container text-center py-4">
-      <h1 className="fw-bold">Editar Perfil</h1>
-      <form onSubmit={atualizarPerfil} className="mt-4">
-        <div className="row">
-          <div className="col-md-6 mb-3">
-            <label className="form-label">Nome</label>
+    <div className="container py-4 d-flex justify-content-center">
+      <div className="card shadow-lg p-4 w-100" style={{ maxWidth: "600px" }}>
+        <h2 className="text-center fw-bold">Editar Perfil</h2>
+        <p className="text-muted text-center">Atualize suas informações abaixo.</p>
+
+        <form onSubmit={atualizarPerfil} className="mt-3">
+          <div className="mb-3">
+            <label className="form-label fw-bold">Nome</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control form-control-lg"
               value={nome}
               onChange={(e) => setNome(e.target.value)}
             />
           </div>
-          <div className="col-md-6 mb-3">
-            <label className="form-label">Sobrenome</label>
+
+          <div className="mb-3">
+            <label className="form-label fw-bold">Sobrenome</label>
             <input
               type="text"
-              className="form-control"
+              className="form-control form-control-lg"
               value={sobrenome}
               onChange={(e) => setSobrenome(e.target.value)}
             />
           </div>
-        </div>
-        <div className="row">
-          <div className="col-md-6 mb-3">
-            <label className="form-label">Telefone</label>
+
+          <div className="mb-3">
+            <label className="form-label fw-bold">Contato</label>
             <input
-              type="text"
-              className="form-control"
+              type="tel"
+              className={`form-control form-control-lg ${erroTelefone ? "is-invalid" : ""}`}
+              placeholder="Digite seu telefone"
               value={telefone}
-              onChange={(e) => setTelefone(e.target.value)}
+              onChange={(e) => validarTelefone(e.target.value)}
             />
+            {erroTelefone && <div className="invalid-feedback">{erroTelefone}</div>}
           </div>
-        </div>
-        <BuscaEndereco setEndereco={setEndereco} />
-        <div className="row justify-content-center">
-          <div className="col-md-4 mb-3">
-            <label className="form-label">UF</label>
-            <input
-              type="text"
-              className="form-control"
-              value={endereco.uf || ""}
-              onChange={(e) => setEndereco({ ...endereco, uf: e.target.value })}
-            />
+
+          <BuscaEndereco setEndereco={setEndereco} />
+
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label fw-bold">UF</label>
+              <input
+                type="text"
+                className="form-control form-control-lg"
+                value={endereco.uf || ""}
+                onChange={(e) => setEndereco({ ...endereco, uf: e.target.value })}
+              />
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label fw-bold">Localidade</label>
+              <input
+                type="text"
+                className="form-control form-control-lg"
+                value={endereco.localidade || ""}
+                onChange={(e) => setEndereco({ ...endereco, localidade: e.target.value })}
+              />
+            </div>
           </div>
-          <div className="col-md-4 mb-3">
-            <label className="form-label">Localidade</label>
-            <input
-              type="text"
-              className="form-control"
-              value={endereco.localidade || ""}
-              onChange={(e) => setEndereco({ ...endereco, localidade: e.target.value })}
-            />
-          </div>
-        </div>
-        <button type="submit" className="btn btn-primary mt-3 w-100">
-          Atualizar Perfil
-        </button>
-      </form>
-      <button
-        type="button"
-        className="btn btn-secondary mt-3 w-100"
-        onClick={() => navigate("/")}
-      >
-        Voltar
-      </button>
+
+          <button type="submit" className="btn btn-primary btn-lg w-100 mt-3">
+            Salvar
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-outline-secondary btn-lg w-100 mt-2"
+            onClick={() => navigate("/")}
+          >
+            Voltar
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

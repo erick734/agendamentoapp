@@ -34,8 +34,8 @@ export default function SideBar() {
               <Link to="/agendamento-consulta" className="nav-link text-light">
                 Agendar Consulta
               </Link>
-                         <Link to="/lista-consultas" className="nav-link text-light">
-                Lista de Consultas
+              <Link to="/lista-consultas" className="nav-link text-light">
+                Consultas Marcadas
               </Link>
             </li>
           </ul>
