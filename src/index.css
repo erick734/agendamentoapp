@@ -16,8 +16,8 @@ body, html {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -26,8 +26,6 @@ body, html {
   padding: 20px;
   text-align: center;
 }
-
-
 
 .home-container h1, .home-container p {
   background-color: rgba(0, 0, 0, 0.6);
