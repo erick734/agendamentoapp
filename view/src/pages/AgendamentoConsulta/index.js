@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { UsuarioContext } from "../../context/Usuario";
-import { fetchMedicos, fetchConsulta, agendarOuEditarConsulta, fetchConsultasPorMedico } from "../../services/consultasService";
+import { fetchMedicos, agendarOuEditarConsulta, fetchConsultasPorMedico } from "../../services/consultasService";
 
 const horariosFixos = [
   "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
@@ -9,59 +9,20 @@ const horariosFixos = [
   "16:00", "16:30", "17:00", "17:30", "18:00"
 ];
 
-export default function AgendamentoConsulta() {
+export default function AgendamentoConsulta({ consulta, fechar, atualizarConsultas }) {
   const { id } = useParams();
   const { usuario } = useContext(UsuarioContext);
   const navigate = useNavigate();
-  
-  const [horario, setHorario] = useState("");
-  const [medico, setMedico] = useState("");
-  const [telefone, setTelefone] = useState("");
+
+  const [horario, setHorario] = useState(consulta?.horario || "");
+  const [medico, setMedico] = useState(consulta?.usuarioMedicoId || "");
+  const [telefone, setTelefone] = useState(consulta?.telefone || "");
   const [erroTelefone, setErroTelefone] = useState("");
   const [medicos, setMedicos] = useState([]);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState([]);
 
-  useEffect(() => {
-    async function carregarDados() {
-      try {
-        const medicosBase = await fetchMedicos();
-        setMedicos(medicosBase);
-
-        if (id) {
-          const consulta = await fetchConsulta(id);
-          if (consulta) {
-            setHorario(consulta.horario);
-            setMedico(consulta.usuarioMedicoId);
-            setTelefone(consulta.telefone);
-          }
-        }
-      } catch (error) {
-        console.error("Erro ao carregar dados:", error);
-      }
-    }
-    carregarDados();
-  }, [id]);
-
-  useEffect(() => {
-    async function carregarHorarios() {
-      if (!medico) return;
-      
-      try {
-        const consultasMedico = await fetchConsultasPorMedico(medico);
-        const horariosOcupados = consultasMedico.map((c) => c.horario);
-        const horariosFiltrados = horariosFixos.filter((h) => !horariosOcupados.includes(h));
-        setHorariosDisponiveis(horariosFiltrados);
-      } catch (error) {
-        console.error("Erro ao carregar horários disponíveis:", error);
-        setHorariosDisponiveis([]);
-      }
-    }
-    carregarHorarios();
-  }, [medico]);
-
   const validarTelefone = (numero) => {
     const numeroLimpo = numero.replace(/\D/g, "");
-
     if (numeroLimpo.length < 8 || numeroLimpo.length > 9) {
       setErroTelefone("Número inválido. Digite 8 ou 9 números.");
     } else if (numeroLimpo.length === 9 && numeroLimpo[0] !== "9") {
@@ -69,24 +30,42 @@ export default function AgendamentoConsulta() {
     } else {
       setErroTelefone("");
     }
-
     setTelefone(numero);
   };
 
-  const handleAgendarConsulta = useCallback(async (e) => {
+  const carregarDados = useCallback(async () => {
+    try {
+      const medicosBase = await fetchMedicos();
+      setMedicos(medicosBase);
+
+      if (consulta) {
+        setHorario(consulta.horario || "");
+        setMedico(consulta.usuarioMedicoId || "");
+        setTelefone(consulta.telefone || "");
+      }
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+    }
+  }, [consulta]);
+
+  const carregarHorarios = useCallback(async () => {
+    if (!medico) return;
+
+    try {
+      const consultasMedico = await fetchConsultasPorMedico(medico);
+      const horariosOcupados = consultasMedico.map((c) => c.horario);
+      const horariosFiltrados = horariosFixos.filter((h) => !horariosOcupados.includes(h));
+      setHorariosDisponiveis(horariosFiltrados);
+    } catch (error) {
+      console.error("Erro ao carregar horários disponíveis:", error);
+      setHorariosDisponiveis([]);
+    }
+  }, [medico]);
+
+  const handleSalvarOuEditar = useCallback(async (e) => {
     e.preventDefault();
 
-    if (!horario || !medico || !telefone) {
-      alert("Por favor, preencha todos os campos!");
-      return;
-    }
-
-    if (erroTelefone) {
-      alert("Corrija o número de telefone antes de continuar.");
-      return;
-    }
-
-    const novaConsulta = {
+    const consultaAtualizada = {
       horario,
       usuarioMedicoId: medico,
       usuarioPacienteId: usuario.id,
@@ -96,22 +75,38 @@ export default function AgendamentoConsulta() {
     };
 
     try {
-      const mensagem = await agendarOuEditarConsulta(id, novaConsulta);
+      const mensagem = await agendarOuEditarConsulta(consulta?.id, consultaAtualizada);
       alert(mensagem);
-      navigate("/lista-consultas");
+      fechar();
+      if (typeof atualizarConsultas === "function") {
+        atualizarConsultas();
+      }
     } catch (error) {
-      console.error("Erro ao agendar consulta:", error);
+      console.error("Erro ao processar a consulta:", error);
       alert("Erro ao processar sua solicitação.");
     }
-  }, [id, horario, medico, telefone, usuario.id, erroTelefone, navigate]);
+  }, [consulta, horario, medico, telefone, usuario, fechar, atualizarConsultas]);
+  
+
+  useEffect(() => {
+    carregarDados();
+  }, [carregarDados]);
+
+  useEffect(() => {
+    carregarHorarios();
+  }, [carregarHorarios]);
 
   return (
     <div className="container py-4 d-flex justify-content-center">
       <div className="card shadow-lg p-4 w-100" style={{ maxWidth: "600px" }}>
-        <h2 className="text-center fw-bold">{id ? "Editar Consulta" : "Agendamento de Consulta"}</h2>
-        <p className="text-muted text-center">Preencha os campos abaixo para {id ? "editar" : "agendar"} sua consulta.</p>
+        <h2 className="text-center fw-bold mb-1" style={{ lineHeight: "normal", margin: "0" }}>
+          {consulta ? "Editar Consulta" : "Agendamento de Consulta"}
+        </h2>
+        <p className="text-muted text-center">
+          Preencha os campos abaixo para {consulta ? "editar" : "agendar"} sua consulta.
+        </p>
 
-        <form onSubmit={handleAgendarConsulta} className="mt-3">
+        <form onSubmit={handleSalvarOuEditar} className="mt-3">
           <div className="mb-3">
             <label htmlFor="medico" className="form-label fw-bold">Médico</label>
             <select
@@ -121,15 +116,11 @@ export default function AgendamentoConsulta() {
               onChange={(e) => setMedico(e.target.value)}
             >
               <option value="">Selecione um médico</option>
-              {medicos.length > 0 ? (
-                medicos.map((med) => (
-                  <option key={med.id} value={med.id}>
-                    {med.nome} {med.sobrenome}
-                  </option>
-                ))
-              ) : (
-                <option value="" disabled>Nenhum médico disponível</option>
-              )}
+              {medicos.map((med) => (
+                <option key={med.id} value={med.id}>
+                  {med.nome} {med.sobrenome}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -143,15 +134,11 @@ export default function AgendamentoConsulta() {
               disabled={!medico || horariosDisponiveis.length === 0}
             >
               <option value="">Selecione um horário</option>
-              {horariosDisponiveis.length > 0 ? (
-                horariosDisponiveis.map((h) => (
-                  <option key={h} value={h}>
-                    {h}
-                  </option>
-                ))
-              ) : (
-                <option value="" disabled>Sem horários disponíveis</option>
-              )}
+              {horariosDisponiveis.map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -173,16 +160,7 @@ export default function AgendamentoConsulta() {
             className="btn btn-primary btn-lg w-100 mt-3"
             disabled={!medico || horariosDisponiveis.length === 0 || !!erroTelefone}
           >
-            {id ? "💾 Salvar Alterações" : "📅 Agendar Consulta"}
-          </button>
-
-          {/* Botão de Voltar para Home */}
-          <button
-            type="button"
-            className="btn btn-outline-secondary btn-lg w-100 mt-2"
-            onClick={() => navigate("/")}
-          >
-            Voltar
+            {consulta ? "Salvar" : "Agendar"}
           </button>
         </form>
       </div>

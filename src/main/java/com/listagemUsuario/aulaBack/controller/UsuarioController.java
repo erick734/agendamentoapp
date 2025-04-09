@@ -44,7 +44,7 @@ public class UsuarioController {
 
         Optional<Usuario> editarUsuario = usuarioRepository.findById(id);
 
-        if (editarUsuario.isPresent()){
+        if (editarUsuario.isPresent()) {
 
             Usuario retornoSalvarEdicaoUsuario = usuarioRepository.save(usuario);
             return ResponseEntity.ok(retornoSalvarEdicaoUsuario);

@@ -15,7 +15,7 @@ export default function Cadastro() {
   const navigate = useNavigate();
 
   const validarTelefone = (numero) => {
-    const numeroLimpo = numero.replace(/\D/g, ""); // Remove caracteres não numéricos
+    const numeroLimpo = numero.replace(/\D/g, "");
 
     if (numeroLimpo.length < 8 || numeroLimpo.length > 9) {
       setErroTelefone("Número inválido. Digite 8 ou 9 números.");

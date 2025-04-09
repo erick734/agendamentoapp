@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const UsuarioContext = createContext();
@@ -10,31 +10,34 @@ export default function UsuarioProvider({ children }) {
   const [inactiveTime, setInactiveTime] = useState(0);
   const navigate = useNavigate();
 
+  // Reseta o contador de inatividade com eventos de interação
+  const resetTimer = useCallback(() => setInactiveTime(0), []);
+
   useEffect(() => {
-    const resetTimer = () => setInactiveTime(0);
+    // Adiciona os ouvintes de interação
+    const eventHandlers = ["mousemove", "keydown", "scroll"];
+    eventHandlers.forEach((event) => window.addEventListener(event, resetTimer));
 
-    window.addEventListener("mousemove", resetTimer);
-    window.addEventListener("keydown", resetTimer);
-    window.addEventListener("scroll", resetTimer);
-
+    // Atualiza o contador de inatividade a cada segundo
     const interval = setInterval(() => {
       setInactiveTime((prev) => prev + 1);
     }, 1000);
 
+    // Limpa os ouvintes e o intervalo ao desmontar
     return () => {
-      window.removeEventListener("mousemove", resetTimer);
-      window.removeEventListener("keydown", resetTimer);
-      window.removeEventListener("scroll", resetTimer);
+      eventHandlers.forEach((event) => window.removeEventListener(event, resetTimer));
       clearInterval(interval);
     };
-  }, []);
+  }, [resetTimer]);
 
   useEffect(() => {
-    if (inactiveTime === 240 && usuario?.logado) {
+    // Redireciona o usuário após 240 segundos de inatividade
+    if (inactiveTime >= 240 && usuario?.logado) {
       navigate("/");
     }
 
-    if (inactiveTime === 600 && usuario?.logado) {
+    // Faz logout após 600 segundos de inatividade
+    if (inactiveTime >= 600 && usuario?.logado) {
       logout();
       navigate("/login");
     }
@@ -42,12 +45,12 @@ export default function UsuarioProvider({ children }) {
 
   function login(usuarioLogin) {
     setUsuario({ ...usuarioLogin, logado: true });
-    setInactiveTime(0);
+    setInactiveTime(0); // Reseta tempo de inatividade ao logar
   }
 
   function logout() {
     setUsuario(null);
-    setInactiveTime(0);
+    setInactiveTime(0); // Reseta tempo de inatividade ao deslogar
   }
 
   return (
@@ -57,8 +60,9 @@ export default function UsuarioProvider({ children }) {
   );
 }
 
+// Hook personalizado para acessar o contexto
 export function useUsuarioContext() {
-  const { usuario, setUsuario, login, logout } = useContext(UsuarioContext);
+  const { usuario, login, logout } = useContext(UsuarioContext);
 
   return {
     usuario,

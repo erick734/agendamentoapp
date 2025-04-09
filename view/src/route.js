@@ -1,5 +1,4 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import Home from "./pages/Home";
 import Cadastro from "./pages/Cadastro";
 import Consulta from "./pages/Consulta";
 import Footer from "./components/Footer";
@@ -34,8 +33,7 @@ export default function AppRoutes() {
               <PrivateRoute>
                 <ProtecedLayout>
                   <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/lista-consultas" element={<Consulta />} />
+                    <Route path="/" element={<Consulta />} />
                     <Route path="/agendamento-consulta" element={<AgendamentoConsulta />} />
                   </Routes>
                 </ProtecedLayout>
