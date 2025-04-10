@@ -102,7 +102,7 @@
       "usuarioPacienteId": "82d5",
       "telefone": "23545555",
       "confirmada": false,
-      "cancelada": false
+      "cancelada": true
     },
     {
       "id": "a255",
@@ -111,16 +111,7 @@
       "usuarioPacienteId": "82d5",
       "telefone": "23545555",
       "confirmada": false,
-      "cancelada": false
-    },
-    {
-      "id": "025c",
-      "horario": "10:30",
-      "usuarioMedicoId": "4cc2",
-      "usuarioPacienteId": "82d5",
-      "telefone": "23545555",
-      "confirmada": true,
-      "cancelada": false
+      "cancelada": true
     }
   ]
 }
