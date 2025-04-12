@@ -15,20 +15,15 @@ import java.time.ZoneOffset;
 @Service
 public class TokenService {
 
-    public TokenService(String secret, String emissor) {
-        this.secret = secret;
-        this.emissor = emissor;
-    }
 
-    @Value("${Spring.expiration_time}")
-    private Long expirationTime() {
-        return null;
-    }
 
-    @Value("${Spring.secretkey}")
+    @Value("${spring.expiration_time}")
+    private Long expirationTime;
+
+    @Value("${spring.secretkey}")
     private String secret;
 
-    @Value("${Spring.emissor}")
+    @Value("${spring.emissor}")
     private String emissor;
 
 
@@ -60,6 +55,8 @@ public class TokenService {
     }
 
     private Instant gerarDataExpiracao() {
-        return LocalDateTime.now().plusMinutes(expirationTime()).toInstant(ZoneOffset.of("03:00"));
+        return LocalDateTime.now()
+                .plusMinutes(expirationTime)
+                .toInstant(ZoneOffset.of("-03:00"));
     }
 }

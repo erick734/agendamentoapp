@@ -1,11 +1,14 @@
 package com.listagemUsuario.aulaBack.controller;
 
+import com.listagemUsuario.aulaBack.configuration.SecurityConfiguration;
 import com.listagemUsuario.aulaBack.models.entities.Usuario;
 import com.listagemUsuario.aulaBack.models.repository.UsuarioRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -39,12 +42,19 @@ public class UsuarioController {
 
     @GetMapping("/{id}")
     public Usuario ListarPorId(@PathVariable Long id) {
-
+var usuario = UsuarioLogado();
         return usuarioRepository.findById(id).get();
+    }
+
+    public String UsuarioLogado(){
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth.getName();
     }
 
     @GetMapping
     public List<Usuario> list() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        auth.getName();
 
         return usuarioRepository.findAll();
     }

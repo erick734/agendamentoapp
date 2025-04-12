@@ -24,4 +24,5 @@ public class Usuario
     private String cep;
     private String localidade;
     private String uf;
+    private String email;
 }
