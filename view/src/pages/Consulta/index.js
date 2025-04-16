@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState, useCallback } from "react";
 import { UsuarioContext } from "../../context/Usuario";
-import { useNavigate } from "react-router-dom";
-import { fetchConsultas, confirmarConsulta, cancelarConsulta, deletarConsulta } from "../../services/consultasService";
 import AgendamentoConsulta from "../AgendamentoConsulta";
+import axios from "axios";
+
+const baseURL = "http://localhost:3001";
 
 export default function Consulta() {
   const { usuario } = useContext(UsuarioContext);
@@ -15,7 +16,8 @@ export default function Consulta() {
     setLoading(true);
     setErro(null);
     try {
-      const consultasBase = await fetchConsultas(usuario);
+      const response = await axios.get(`${baseURL}/consultas`);
+      const consultasBase = response.data;
       let consultasFiltradas = [];
       if (usuario.perfil === "p") {
         consultasFiltradas = consultasBase.filter(
@@ -28,8 +30,31 @@ export default function Consulta() {
       } else if (usuario.perfil === "a") {
         consultasFiltradas = consultasBase;
       }
-      setConsultas(consultasFiltradas);
+
+      const consultasComDetalhes = await Promise.all(
+        consultasFiltradas.map(async (consulta) => {
+          const medicoResponse = consulta.usuarioMedicoId
+            ? await axios.get(`${baseURL}/usuario/${consulta.usuarioMedicoId}`)
+            : { data: null };
+          const pacienteResponse = consulta.usuarioPacienteId
+            ? await axios.get(`${baseURL}/usuario/${consulta.usuarioPacienteId}`)
+            : { data: null };
+
+          return {
+            ...consulta,
+            nomeMedico: medicoResponse.data
+              ? `${medicoResponse.data.nome} ${medicoResponse.data.sobrenome}`
+              : "Nome do médico indisponível",
+            nomePaciente: pacienteResponse.data
+              ? `${pacienteResponse.data.nome} ${pacienteResponse.data.sobrenome}`
+              : "Nome do paciente indisponível",
+          };
+        })
+      );
+
+      setConsultas(consultasComDetalhes);
     } catch (error) {
+      console.error("Erro ao carregar consultas:", error);
       setErro("Erro ao carregar consultas. Tente novamente.");
     } finally {
       setLoading(false);
@@ -42,38 +67,46 @@ export default function Consulta() {
 
   async function handleConfirmar(id) {
     try {
-      await confirmarConsulta(id);
+      await axios.patch(`${baseURL}/consultas/${id}`, { confirmada: true, cancelada: false });
       setConsultas((prev) =>
         prev.map((consulta) =>
           consulta.id === id ? { ...consulta, confirmada: true, cancelada: false } : consulta
         )
       );
     } catch (error) {
+      console.error("Erro ao confirmar consulta:", error);
       alert("Erro ao confirmar consulta!");
     }
   }
 
   async function handleCancelar(id) {
     try {
-      await cancelarConsulta(id);
+      axios.patch(`${baseURL}/consultas/${id}`, { cancelada: true, confirmada: false });
       setConsultas((prev) =>
         prev.map((consulta) =>
           consulta.id === id ? { ...consulta, cancelada: true, confirmada: false } : consulta
         )
       );
     } catch (error) {
+      console.error("Erro ao cancelar consulta:", error);
       alert("Erro ao cancelar consulta!");
     }
   }
 
   async function handleDeletar(id) {
     try {
-      await deletarConsulta(id);
+      axios.delete(`${baseURL}/consultas/${id}`);
       setConsultas((prev) => prev.filter((consulta) => consulta.id !== id));
     } catch (error) {
+      console.error("Erro ao deletar consulta:", error);
       alert("Erro ao deletar consulta!");
     }
   }
+
+  const atualizarConsultas = useCallback(() => {
+    carregarConsultas();
+    setConsultaSelecionada(null);
+  }, [carregarConsultas]);
 
   return (
     <div className="container py-4">
@@ -232,7 +265,7 @@ export default function Consulta() {
               <AgendamentoConsulta
                 consulta={consultaSelecionada}
                 fechar={() => setConsultaSelecionada(null)}
-                atualizarConsultas={carregarConsultas}
+                atualizarConsultas={atualizarConsultas}
               />
 
               <button

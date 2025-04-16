@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { UsuarioContext } from "../../context/Usuario";
-import { fetchMedicos, agendarOuEditarConsulta, fetchConsultasPorMedico } from "../../services/consultasService";
+import axios from "axios";
 
 const horariosFixos = [
   "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
   "11:00", "11:30", "14:00", "14:30", "15:00", "15:30",
   "16:00", "16:30", "17:00", "17:30", "18:00"
 ];
+
+const baseURL = "http://localhost:3001";
 
 export default function AgendamentoConsulta({ consulta, fechar, atualizarConsultas }) {
   const { id } = useParams();
@@ -35,8 +37,8 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
 
   const carregarDados = useCallback(async () => {
     try {
-      const medicosBase = await fetchMedicos();
-      setMedicos(medicosBase);
+      const responseMedicos = await axios.get(`${baseURL}/usuario?perfil=m`);
+      setMedicos(responseMedicos.data);
 
       if (consulta) {
         setHorario(consulta.horario || "");
@@ -44,7 +46,8 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
         setTelefone(consulta.telefone || "");
       }
     } catch (error) {
-      console.error("Erro ao carregar dados:", error);
+      console.error("Erro ao carregar médicos:", error);
+      alert("Erro ao carregar a lista de médicos.");
     }
   }, [consulta]);
 
@@ -52,13 +55,14 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
     if (!medico) return;
 
     try {
-      const consultasMedico = await fetchConsultasPorMedico(medico);
-      const horariosOcupados = consultasMedico.map((c) => c.horario);
+      const responseConsultas = await axios.get(`${baseURL}/consultas?usuarioMedicoId=${medico}`);
+      const horariosOcupados = responseConsultas.data.map((c) => c.horario);
       const horariosFiltrados = horariosFixos.filter((h) => !horariosOcupados.includes(h));
       setHorariosDisponiveis(horariosFiltrados);
     } catch (error) {
       console.error("Erro ao carregar horários disponíveis:", error);
       setHorariosDisponiveis([]);
+      alert("Erro ao carregar os horários disponíveis.");
     }
   }, [medico]);
 
@@ -75,8 +79,13 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
     };
 
     try {
-      const mensagem = await agendarOuEditarConsulta(consulta?.id, consultaAtualizada);
-      alert(mensagem);
+      let response;
+      if (consulta?.id) {
+        response = await axios.patch(`${baseURL}/consultas/${consulta.id}`, consultaAtualizada);
+      } else {
+        response = await axios.post(`${baseURL}/consultas`, consultaAtualizada);
+      }
+      alert(response.data);
       fechar();
       if (typeof atualizarConsultas === "function") {
         atualizarConsultas();
@@ -86,7 +95,7 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
       alert("Erro ao processar sua solicitação.");
     }
   }, [consulta, horario, medico, telefone, usuario, fechar, atualizarConsultas]);
-  
+
 
   useEffect(() => {
     carregarDados();

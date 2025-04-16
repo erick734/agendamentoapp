@@ -25,9 +25,6 @@ export default function SideBar() {
             </a>
             <ul className="collapse list-unstyled ms-3" id="submenuCadastro">
               <li>
-                {/* <Link to="/agendamento-consulta" className="nav-link text-light">
-                  Agendar
-                </Link> */}
                 <Link className="nav-link text-light" to="/editar-perfil">
                   Editar Perfil
                 </Link>

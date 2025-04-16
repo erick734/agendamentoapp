@@ -22,14 +22,12 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-
     @PostMapping("/cadastrar")
     @Operation(summary = "Cadastrar usuario", description = "")
-    public ResponseEntity<?> cadastrar(@RequestBody Usuario usuario){
+    public ResponseEntity<?> cadastrar(@RequestBody Usuario usuario) {
         var retornoSalvarUsuario = usuarioRepository.save(usuario);
         return ResponseEntity.ok(retornoSalvarUsuario);
     }
-
 
     @PostMapping
     @Operation(summary = "Salvar o usuario", description = "Metodo responsavel por salvar o usuario")
@@ -42,11 +40,11 @@ public class UsuarioController {
 
     @GetMapping("/{id}")
     public Usuario ListarPorId(@PathVariable Long id) {
-var usuario = UsuarioLogado();
+        var usuario = UsuarioLogado();
         return usuarioRepository.findById(id).get();
     }
 
-    public String UsuarioLogado(){
+    public String UsuarioLogado() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         return auth.getName();
     }
