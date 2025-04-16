@@ -5,14 +5,12 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @Entity
 @Table(name = "usuario")
 @Data
 @Getter
 @Setter
-public class Usuario
-{
+public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,7 +18,9 @@ public class Usuario
     private String usuario;
     private String senha;
     private String perfil;
-    private String endereco;
+    private String nome;
+    private String sobrenome;
+    private String telefone;
     private String cep;
     private String localidade;
     private String uf;
