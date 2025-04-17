@@ -1,10 +1,9 @@
-package com.listagemUsuario.aulaBack.services;
+package com.listagemUsuario.aulaBack.application.services;
 
-import com.listagemUsuario.aulaBack.models.entities.Usuario;
-import com.listagemUsuario.aulaBack.models.repository.UsuarioRepository;
+import com.listagemUsuario.aulaBack.domain.entities.Usuario;
+import com.listagemUsuario.aulaBack.domain.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,9 +14,6 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder; // Para codificar a senha
 
     public Usuario UsuarioLogado() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
@@ -36,9 +32,9 @@ public class UsuarioService {
         return usuarioRepository.findByEmail(email);
     }
 
+
     public Usuario salvarUsuario(Usuario usuario) {
-        // Aqui você pode adicionar lógica de validação e outras operações antes de salvar
-        usuario.setSenha(passwordEncoder.encode(usuario.getSenha())); // Codifica a senha antes de salvar
+        usuario.setSenha(usuario.getSenha());
         return usuarioRepository.save(usuario);
     }
 
@@ -53,7 +49,7 @@ public class UsuarioService {
                     usuario.setUf(usuarioAtualizado.getUf());
                     usuario.setEmail(usuarioAtualizado.getEmail());
                     if (usuarioAtualizado.getSenha() != null && !usuarioAtualizado.getSenha().isEmpty()) {
-                        usuario.setSenha(passwordEncoder.encode(usuarioAtualizado.getSenha()));
+                        usuario.setSenha(usuarioAtualizado.getSenha());
                     }
                     return usuarioRepository.save(usuario);
                 })

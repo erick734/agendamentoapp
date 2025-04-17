@@ -1,8 +1,6 @@
-package com.listagemUsuario.aulaBack.configuration;
+package com.listagemUsuario.aulaBack.presentation.configuration;
 
-import org.apache.catalina.filters.HttpHeaderSecurityFilter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

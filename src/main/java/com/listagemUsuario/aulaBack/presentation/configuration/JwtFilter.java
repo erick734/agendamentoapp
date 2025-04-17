@@ -1,21 +1,18 @@
-package com.listagemUsuario.aulaBack.configuration;
+package com.listagemUsuario.aulaBack.presentation.configuration;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.listagemUsuario.aulaBack.services.TokenService;
+import com.listagemUsuario.aulaBack.application.services.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 
 @Component

@@ -1,3 +1,3 @@
-package com.listagemUsuario.aulaBack.objetct;
+package com.listagemUsuario.aulaBack.application.objetct;
 
 public record LoginRequest (String email, String senha){}

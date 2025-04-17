@@ -1,4 +1,4 @@
-package com.listagemUsuario.aulaBack.configuration;
+package com.listagemUsuario.aulaBack.presentation.configuration;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

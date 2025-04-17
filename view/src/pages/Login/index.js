@@ -21,22 +21,31 @@ export default function Login() {
     setCarregando(true);
 
     try {
-      const responseAxios = await axios.get(
-        `http://localhost:3001/usuario?usuario=${usuarioInformado}&senha=${senha}`
-      );
-
-      if (responseAxios.data.length > 0) {
-        const usuario = responseAxios.data[0];
-        login({ ...usuario, logado: true });
-        navigate("/");
-      } else {
-        alert("Usuário ou senha incorretos. Tente novamente.");
-      }
+      const loginRequest = { email:usuarioInformado, senha:senha };
+      await axios.post("http://localhost:8080/auth", loginRequest);
+      alert("Usuário cadastrado com sucesso!");
+debugger;
     } catch (error) {
-      alert("Erro ao comunicar com o servidor");
-    } finally {
-      setCarregando(false);
+      alert("Erro ao cadastrar o usuário!");
     }
+
+    // try {
+    //   const responseAxios = await axios.get(
+    //     `http://localhost:3001/usuario?usuario=${usuarioInformado}&senha=${senha}`
+    //   );
+
+    //   if (responseAxios.data.length > 0) {
+    //     const usuario = responseAxios.data[0];
+    //     login({ ...usuario, logado: true });
+    //     navigate("/");
+    //   } else {
+    //     alert("Usuário ou senha incorretos. Tente novamente.");
+    //   }
+    // } catch (error) {
+    //   alert("Erro ao comunicar com o servidor");
+    // } finally {
+    //   setCarregando(false);
+    // }
   }
 
   return (

@@ -1,7 +1,7 @@
-package com.listagemUsuario.aulaBack.controller;
+package com.listagemUsuario.aulaBack.presentation.controller;
 
-import com.listagemUsuario.aulaBack.models.entities.Usuario;
-import com.listagemUsuario.aulaBack.services.UsuarioService;
+import com.listagemUsuario.aulaBack.domain.entities.Usuario;
+import com.listagemUsuario.aulaBack.application.services.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

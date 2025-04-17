@@ -1,6 +1,6 @@
-package com.listagemUsuario.aulaBack.models.repository;
+package com.listagemUsuario.aulaBack.domain.repository;
 
-import com.listagemUsuario.aulaBack.models.entities.Usuario;
+import com.listagemUsuario.aulaBack.domain.entities.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

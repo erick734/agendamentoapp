@@ -1,7 +1,7 @@
-package com.listagemUsuario.aulaBack.controller;
+package com.listagemUsuario.aulaBack.presentation.controller;
 
-import com.listagemUsuario.aulaBack.objetct.LoginRequest;
-import com.listagemUsuario.aulaBack.services.TokenService;
+import com.listagemUsuario.aulaBack.application.objetct.LoginRequest;
+import com.listagemUsuario.aulaBack.application.services.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +22,9 @@ public class AuthController {
     @Operation(summary = "Login do usuário", description = "Rota para autenticar um usuário com JWT token.")
     public ResponseEntity<?> login(LoginRequest loginRequest) {
         var resultGerarToken = tokenService.gerarToken(loginRequest);
+        if(false){
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(resultGerarToken);
     }
 
