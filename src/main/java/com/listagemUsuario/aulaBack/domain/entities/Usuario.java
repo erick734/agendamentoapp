@@ -1,5 +1,7 @@
 package com.listagemUsuario.aulaBack.domain.entities;
 
+import com.listagemUsuario.aulaBack.application.objetct.usuario.UsuarioRequest;
+import com.listagemUsuario.aulaBack.domain.valueObjetcs.CPF;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -15,6 +17,9 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Embedded
+    private CPF cpf;
+
     private String usuario;
     private String senha;
     private String perfil;
@@ -26,91 +31,18 @@ public class Usuario {
     private String uf;
     private String email;
 
-    public Long getId() {
-        return id;
+    public CPF getCPF() {
+        return cpf;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setCPF(CPF cpf) {
+        this.cpf = cpf;
     }
 
-    public String getUsuario() {
-        return usuario;
-    }
+    public Usuario(){}
 
-    public void setUsuario(String usuario) {
-        this.usuario = usuario;
-    }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
-        this.senha = senha;
-    }
-
-    public String getPerfil() {
-        return perfil;
-    }
-
-    public void setPerfil(String perfil) {
-        this.perfil = perfil;
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public String getSobrenome() {
-        return sobrenome;
-    }
-
-    public void setSobrenome(String sobrenome) {
-        this.sobrenome = sobrenome;
-    }
-
-    public String getTelefone() {
-        return telefone;
-    }
-
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
-    }
-
-    public String getCep() {
-        return cep;
-    }
-
-    public void setCep(String cep) {
-        this.cep = cep;
-    }
-
-    public String getLocalidade() {
-        return localidade;
-    }
-
-    public void setLocalidade(String localidade) {
-        this.localidade = localidade;
-    }
-
-    public String getUf() {
-        return uf;
-    }
-
-    public void setUf(String uf) {
-        this.uf = uf;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public Usuario(UsuarioRequest entrada){
+        this.email= entrada.email();
+        this.senha=entrada.senha();
     }
 }
