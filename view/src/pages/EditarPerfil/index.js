@@ -37,6 +37,7 @@ export default function EditarPerfil() {
     setTelefone(numero);
   };
 
+
   async function atualizarPerfil(e) {
     e.preventDefault();
 
@@ -53,7 +54,7 @@ export default function EditarPerfil() {
     try {
       const usuarioAtualizado = { nome, sobrenome, telefone, endereco };
 
-      await axios.patch(`http://localhost:3001/usuario/${usuario.id}`, usuarioAtualizado);
+      await axios.patch(`http://localhost:8080/usuario/${usuario.id}`, usuarioAtualizado);
       alert("Perfil atualizado com sucesso!");
       navigate("/");
     } catch (error) {

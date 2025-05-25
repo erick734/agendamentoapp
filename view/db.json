@@ -97,6 +97,34 @@
       "nome": "kellen",
       "sobrenome": "fdhgb",
       "telefone": "85858858"
+    },
+    {
+      "id": "4b35",
+      "usuario": "eu",
+      "senha": "123",
+      "perfil": "p",
+      "endereco": {
+        "cep": "88845-000",
+        "localidade": "Cocal do Sul",
+        "uf": "SC"
+      },
+      "nome": "eu",
+      "sobrenome": "eu",
+      "telefone": "75275222"
+    },
+    {
+      "id": "8da7",
+      "usuario": "paciente1",
+      "senha": "123",
+      "perfil": "p",
+      "endereco": {
+        "cep": "88845-000",
+        "localidade": "Cocal do Sul",
+        "uf": "SC"
+      },
+      "nome": "testebd",
+      "sobrenome": "bd",
+      "telefone": "42574374"
     }
   ],
   "consultas": [
