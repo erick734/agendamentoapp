@@ -5,7 +5,7 @@ import axios from "axios";
 const baseURL = "http://localhost:8080";
 
 const getToken = () => localStorage.getItem("authToken");
-const getUsuario = () => JSON.parse(localStorage.getItem("usuario"));
+const getUsuario = () => JSON.parse(localStorage.getItem("authUser"));
 
 export default function Consulta() {
   const [usuario, setUsuario] = useState(getUsuario());
@@ -120,8 +120,6 @@ export default function Consulta() {
     }
   }, [usuario, carregarConsultas]);
 
-  // As funções handleConfirmar, handleCancelar e handleDeletar permanecem as mesmas
-
   const atualizarConsultas = useCallback(() => {
     if (usuario) {
       carregarConsultas();
@@ -136,7 +134,6 @@ export default function Consulta() {
       </h1>
 
       <div className="card shadow-sm p-4">
-        {/* Seus botões e restante do código da tabela permanecem iguais */}
       </div>
 
       {consultaSelecionada && (

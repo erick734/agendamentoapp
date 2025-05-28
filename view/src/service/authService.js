@@ -1,12 +1,23 @@
-import axios from "axios";
+import api from "./api";
 
-const API = axios.create({
-  baseURL: "http://localhost:8080",
-});
+const login = async (data) => {
+  const response = await api.post("/auth/login", data);
+  const { token, id, nome, perfil } = response.data;
+
+  const userData = { id, nome, perfil };
+
+  localStorage.setItem("authToken", JSON.stringify(token));
+  localStorage.setItem("authUser", JSON.stringify(userData));
+
+  return response.data;
+};
+
+const cadastrar = async (cadastroRequest) => {
+  const response = await api.post("/usuario", cadastroRequest);
+  return response.data;
+};
 
 export const authService = {
-  login: async (data) => {
-    const response = await API.post("/login", data);
-    return response.data;
-  },
+  login,
+  cadastrar,
 };

@@ -19,12 +19,11 @@ public class UsuarioController {
 
     @PostMapping
     @Operation(summary = "Salvar usuário", description = "Método responsável por salvar um novo usuário")
-    public ResponseEntity<?> salvar(@RequestBody UsuarioRequest usuarioRequest) { // UsuarioRequest ajustado
+    public ResponseEntity<?> salvar(@RequestBody UsuarioRequest usuarioRequest) {
         try {
-            var usuarioSalvo = usuarioService.salvar(usuarioRequest); // salvar agora recebe UsuarioRequest ajustado
-            // SIGA O EXEMPLO: retorna a entidade Usuario salva com status OK
+            var usuarioSalvo = usuarioService.salvar(usuarioRequest);
             return ResponseEntity.ok().body(usuarioSalvo);
-        } catch (Exception e) { // Exemplo usa Exception genérica
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao salvar o usuário: " + e.getMessage());
         }
     }

@@ -19,7 +19,7 @@ import java.util.Collections;
 public class JwtFilter extends OncePerRequestFilter {
 
     @Autowired
-    private TokenService tokenService; // Seu TokenService baseado no exemplo
+    private TokenService tokenService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -29,12 +29,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // SIGA O EXEMPLO: Isenções de caminho do exemplo
-        // O exemplo isenta "/auth" (para POST login), "/usuario" (todos os métodos), e Swagger.
-        // "/logout" também é isento no exemplo, mas você não tem essa rota definida.
-        if (path.equals("/auth") // Assumindo que é para o POST do login
-                || request.getMethod().equals("POST") && path.equals("/auth") // Mais específico para POST
-                || path.startsWith("/usuario") // ISENTA TODAS AS ROTAS /usuario DE VERIFICAÇÃO DE TOKEN AQUI
+        // 🔥 Ignorar endpoints públicos
+        if (path.startsWith("/auth")
+                || path.startsWith("/usuario")
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/swagger-resources")
@@ -43,25 +40,27 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
+        // 🔐 Verificar token
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.replace("Bearer ", "");
             try {
                 DecodedJWT jwt = tokenService.validarToken(token);
-                // O subject agora é o 'usuario' (username), não o email.
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
-                                jwt.getSubject(), // Deve ser o 'usuario' (username)
+                                jwt.getSubject(),
                                 null,
                                 Collections.emptyList()
                         );
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } catch (Exception e) {
+                // 🔥 Token inválido
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token invalido"); // Mensagem do exemplo
+                response.getWriter().write("Token inválido");
                 return;
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }

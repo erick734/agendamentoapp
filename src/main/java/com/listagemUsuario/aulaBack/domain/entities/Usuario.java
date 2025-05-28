@@ -5,12 +5,14 @@ import com.listagemUsuario.aulaBack.domain.valueObjetcs.Email;
 import com.listagemUsuario.aulaBack.domain.valueObjetcs.Telefone;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "usuario")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Usuario {
 
     @Id

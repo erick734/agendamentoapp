@@ -22,7 +22,6 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
 
-  // ✔️ Validação de telefone
   const validarTelefone = (numero) => {
     const numeroLimpo = numero.replace(/\D/g, "");
     if (numeroLimpo.length < 8 || numeroLimpo.length > 9) {
@@ -35,7 +34,6 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
     setTelefone(numero);
   };
 
-  // ✔️ Carregar médicos
   const carregarMedicos = useCallback(async () => {
     setLoading(true);
     try {
@@ -49,7 +47,6 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
     }
   }, []);
 
-  // ✔️ Carregar horários disponíveis para o médico selecionado
   const carregarHorarios = useCallback(async () => {
     if (!medico) {
       setHorariosDisponiveis([]);
@@ -69,7 +66,6 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
     }
   }, [medico]);
 
-  // ✔️ Salvando ou editando a consulta
   const handleSalvarOuEditar = async (e) => {
     e.preventDefault();
     setFormError("");
@@ -78,15 +74,10 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
       setFormError("Corrija o telefone.");
       return;
     }
-    // if (!usuario || !usuario.id) {
-    //   setFormError("Usuário não identificado. Faça login novamente.");
-    //   return;
-    // }
 
     const dadosConsulta = {
       horario,
       usuarioMedicoId: medico,
-      // usuarioPacienteId: usuario.id,
       telefone,
       confirmada: false,
       cancelada: false,
@@ -114,7 +105,6 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
     }
   };
 
-  // ✔️ Effects
   useEffect(() => {
     carregarMedicos();
   }, [carregarMedicos]);
@@ -123,7 +113,6 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
     carregarHorarios();
   }, [carregarHorarios]);
 
-  // ✔️ Loader inicial
   if (loading && !medicos.length) return <p>Carregando dados...</p>;
 
   return (

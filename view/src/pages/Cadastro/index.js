@@ -43,30 +43,19 @@ const validarTelefone = (numero) => {
     setCarregando(true);
 
     const payload = {
-      usuario: usuario, // Se o backend espera 'email' como login, considere usar um campo de email
-      email: usuario,   // Ou tenha um campo de email separado no formulário
+      usuario: usuario,
+      email: usuario,
       senha: senha,
       perfil: perfil,
       nome: nome,
       sobrenome: sobrenome,
-      telefone: telefone.replace(/\D/g, ""), // Enviar apenas números para o backend é uma boa prática
-      // Endereço: Verifique se o backend espera um objeto aninhado ou campos separados
-      // Opção 1: Objeto aninhado (se o backend esperar algo como { ..., endereco: { cep: ..., ... } })
-      // endereco: {
-      //   cep: endereco.cep || "",
-      //   localidade: endereco.localidade || "",
-      //   uf: endereco.uf || "",
-      //   logradouro: endereco.logradouro || "", // Exemplo
-      //   bairro: endereco.bairro || ""         // Exemplo
-      // },
-      // Opção 2: Campos separados (como no seu código original)
+      telefone: telefone.replace(/\D/g, ""),
       cep: endereco.cep || "",
       localidade: endereco.localidade || "",
       uf: endereco.uf || "",
     };
 
     try {
-      // Usando o serviço de usuário
       await usuarioService.cadastrar(payload);
       alert("Usuário cadastrado com sucesso!");
       navigate("/login");
@@ -93,7 +82,7 @@ const validarTelefone = (numero) => {
           <div className="mb-3">
             <label className="form-label fw-bold">Usuário (será seu login/email)</label>
             <input
-              type="email" // Recomenda-se usar type="email" para validação básica
+              type="email"
               className="form-control form-control-lg"
               value={usuario}
               onChange={(e) => setUsuario(e.target.value)}
@@ -111,7 +100,7 @@ const validarTelefone = (numero) => {
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               required
-              minLength={6} // Exemplo de validação
+              minLength={6}
               disabled={carregando}
             />
           </div>
@@ -182,7 +171,7 @@ const validarTelefone = (numero) => {
               className="form-control form-control-lg"
               value={endereco.cep || ""}
               onChange={(e) => setEndereco({ ...endereco, cep: e.target.value })}
-              disabled // Geralmente desabilitado se vem do BuscaEndereco
+              disabled
             />
           </div>
           <div className="row">
@@ -193,7 +182,7 @@ const validarTelefone = (numero) => {
                 className="form-control form-control-lg"
                 value={endereco.localidade || ""}
                 onChange={(e) => setEndereco({ ...endereco, localidade: e.target.value })}
-                disabled // Geralmente desabilitado
+                disabled
               />
             </div>
             <div className="col-md-4 mb-3">
@@ -203,7 +192,7 @@ const validarTelefone = (numero) => {
                 className="form-control form-control-lg"
                 value={endereco.uf || ""}
                 onChange={(e) => setEndereco({ ...endereco, uf: e.target.value })}
-                disabled // Geralmente desabilitado
+                disabled
               />
             </div>
           </div>

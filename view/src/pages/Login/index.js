@@ -5,7 +5,7 @@ import { setAuth } from "../../redux/authSlice";
 import { authService } from "../../service/authService";
 
 export default function Login() {
-  const [usuario, setUsuario] = useState(""); // Troquei de 'email' para 'usuario'
+  const [usuario, setUsuario] = useState("");
   const [senha, setSenha] = useState("");
   const [carregando, setCarregando] = useState(false);
 
@@ -25,21 +25,18 @@ export default function Login() {
     try {
       const res = await authService.login({ usuario, senha });
 
-      if (res.token) {
-        dispatch(
-          setAuth({
-            token: res.token,
-            usuario: res.usuario,
-            id: res.id,
-            perfil: res.perfil,
-            nome: res.nome,
-          })
-        );
-        alert("Login realizado com sucesso!");
-        navigate("/"); // Redirecione para onde quiser
-      } else {
-        alert("Token não retornado. Verifique as credenciais.");
-      }
+      dispatch(
+        setAuth({
+          token: res.token,
+          usuario,
+          id: res.id,
+          perfil: res.perfil,
+          nome: res.nome,
+        })
+      );
+
+      alert("Login realizado com sucesso!");
+      navigate("/");
     } catch (err) {
       console.error("Erro ao logar:", err.response?.data || err.message);
       const mensagemErro =
