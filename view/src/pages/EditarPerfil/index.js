@@ -21,8 +21,13 @@ export default function EditarPerfil() {
 
         setNome(dados.nome);
         setSobrenome(dados.sobrenome);
-        setTelefone(dados.telefone);
-        setEndereco(dados.endereco || {});
+        setTelefone(dados.telefone?.numero || "");
+        setEndereco({
+          cep: dados.cep || "",
+          localidade: dados.localidade || "",
+          uf: dados.uf || "",
+        });
+
       } catch (error) {
         alert("Erro ao buscar dados do usuário!");
         navigate("/");
