@@ -5,7 +5,7 @@ import { setAuth } from "../../redux/authSlice";
 import { authService } from "../../service/authService";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const [usuario, setUsuario] = useState(""); // Troquei de 'email' para 'usuario'
   const [senha, setSenha] = useState("");
   const [carregando, setCarregando] = useState(false);
 
@@ -15,7 +15,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !senha) {
+    if (!usuario || !senha) {
       alert("Preencha todos os campos!");
       return;
     }
@@ -23,18 +23,30 @@ export default function Login() {
     setCarregando(true);
 
     try {
-      const res = await authService.login({ email, senha });
+      const res = await authService.login({ usuario, senha });
 
       if (res.token) {
-        dispatch(setAuth({ token: res.token, usuario: res.usuario, id: res.id }));
+        dispatch(
+          setAuth({
+            token: res.token,
+            usuario: res.usuario,
+            id: res.id,
+            perfil: res.perfil,
+            nome: res.nome,
+          })
+        );
         alert("Login realizado com sucesso!");
-        navigate("/");
+        navigate("/"); // Redirecione para onde quiser
       } else {
         alert("Token não retornado. Verifique as credenciais.");
       }
     } catch (err) {
       console.error("Erro ao logar:", err.response?.data || err.message);
-      alert("Erro ao logar. Verifique os dados ou o servidor.");
+      const mensagemErro =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Erro ao logar. Verifique os dados ou o servidor.";
+      alert(mensagemErro);
     } finally {
       setCarregando(false);
     }
@@ -50,24 +62,26 @@ export default function Login() {
         <h2 className="text-center mb-4 fw-bold">Login</h2>
 
         <div className="mb-3">
-          <label>Email:</label>
+          <label className="form-label">Usuário:</label>
           <input
-            type="email"
+            type="text"
             className="form-control"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={usuario}
+            onChange={(e) => setUsuario(e.target.value)}
             disabled={carregando}
+            required
           />
         </div>
 
         <div className="mb-3">
-          <label>Senha:</label>
+          <label className="form-label">Senha:</label>
           <input
             type="password"
             className="form-control"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
             disabled={carregando}
+            required
           />
         </div>
 

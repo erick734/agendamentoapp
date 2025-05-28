@@ -78,9 +78,9 @@ public class UsuarioService {
         return new UsuarioResponse(
                 usuario.getId(),
                 usuario.getUsuario(),
-                usuario.getPerfil(),
                 usuario.getNome(),
                 usuario.getSobrenome(),
+                usuario.getPerfil(),
                 usuario.getTelefone() != null ? usuario.getTelefone().getTelefone() : null,
                 usuario.getCep(),
                 usuario.getLocalidade(),

@@ -5,8 +5,9 @@ import com.listagemUsuario.aulaBack.application.objetct.usuario.LoginResponse;
 import com.listagemUsuario.aulaBack.domain.entities.Usuario;
 import com.listagemUsuario.aulaBack.domain.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
@@ -17,25 +18,21 @@ public class AuthService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public ResponseEntity<?> login(LoginRequest loginRequest) throws Exception {
-        Usuario usuarioSalvo = usuarioRepository.findByEmail(loginRequest.email()).orElse(null);
+    public LoginResponse login(LoginRequest loginRequest) {
+        Usuario usuario = usuarioRepository.findByUsuarioIgnoreCase(loginRequest.usuario())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
 
-        if (usuarioSalvo != null) {
-            boolean senhaCorreta = usuarioSalvo.getSenha().equals(loginRequest.senha());
-
-            if (senhaCorreta) {
-                String token = tokenService.gerarToken(loginRequest);
-
-                LoginResponse resposta = new LoginResponse(
-                        usuarioSalvo.getId(),
-                        token,
-                        usuarioSalvo.getNome()
-                );
-
-                return ResponseEntity.ok(resposta);
-            }
-            throw new RuntimeException("Senha incorreta");
+        if (!usuario.getSenha().equals(loginRequest.senha())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Senha incorreta");
         }
-        throw new RuntimeException("Usuário não encontrado");
+
+        String token = tokenService.gerarToken(usuario);
+
+        return new LoginResponse(
+                usuario.getId(),
+                usuario.getNome(),
+                usuario.getPerfil(),
+                token
+        );
     }
 }

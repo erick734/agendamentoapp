@@ -1,68 +1,39 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const loadAuthFromLocalStorage = () => {
-  try {
-    const token = localStorage.getItem("authToken");
-    const user = localStorage.getItem("authUser");
-    const id = localStorage.getItem("authId");
-
-    if (!token || !user || !id) {
-      return {
-        token: null,
-        usuario: null,
-        id: null,
-        isAuthenticated: false
-      };
-    }
-
-    return {
-      token: JSON.parse(token),
-      usuario: JSON.parse(user),
-      id: JSON.parse(id),
-      isAuthenticated: true
-    };
-  } catch (e) {
-    console.warn("Erro ao carregar auth do localStorage", e);
-    return {
-      token: null,
-      usuario: null,
-      id: null,
-      isAuthenticated: false
-    };
-  }
-};
-
-const initialState = loadAuthFromLocalStorage();
-
 const authSlice = createSlice({
   name: "auth",
-  initialState,
+  initialState: {
+    token: null,
+    usuario: null,
+    id: null,
+    perfil: null,
+    nome: null,
+  },
   reducers: {
     setAuth: (state, action) => {
-      const { token, usuario, id } = action.payload;
-      state.token = token;
-      state.usuario = usuario;
-      state.id = id;
-      state.isAuthenticated = true;
-
-      localStorage.setItem("authToken", JSON.stringify(token));
-      localStorage.setItem("authUser", JSON.stringify(usuario));
-      localStorage.setItem("authId", JSON.stringify(id));
+      state.token = action.payload.token;
+      state.usuario = action.payload.usuario;
+      state.id = action.payload.id;
+      state.perfil = action.payload.perfil;
+      state.nome = action.payload.nome;
     },
     logout: (state) => {
       state.token = null;
       state.usuario = null;
       state.id = null;
-      state.isAuthenticated = false;
-
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("authUser");
-      localStorage.removeItem("authId");
-    }
-  }
+      state.perfil = null;
+      state.nome = null;
+    },
+  },
 });
 
 export const { setAuth, logout } = authSlice.actions;
 export default authSlice.reducer;
+
+// 🔥 Selectors
+export const selectToken = (state) => state.auth.token;
 export const selectUsuario = (state) => state.auth.usuario;
-export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
+export const selectPerfil = (state) => state.auth.perfil;
+export const selectNome = (state) => state.auth.nome;
+export const selectId = (state) => state.auth.id;
+export const selectIsAuthenticated = (state) => !!state.auth.token;

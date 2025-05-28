@@ -19,7 +19,7 @@ import java.util.Collections;
 public class JwtFilter extends OncePerRequestFilter {
 
     @Autowired
-    private TokenService tokenService;
+    private TokenService tokenService; // Seu TokenService baseado no exemplo
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -28,39 +28,40 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        // Paths exempt from JWT check
-        if (path.equals("/auth/login")
+
+        // SIGA O EXEMPLO: Isenções de caminho do exemplo
+        // O exemplo isenta "/auth" (para POST login), "/usuario" (todos os métodos), e Swagger.
+        // "/logout" também é isento no exemplo, mas você não tem essa rota definida.
+        if (path.equals("/auth") // Assumindo que é para o POST do login
+                || request.getMethod().equals("POST") && path.equals("/auth") // Mais específico para POST
+                || path.startsWith("/usuario") // ISENTA TODAS AS ROTAS /usuario DE VERIFICAÇÃO DE TOKEN AQUI
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/swagger-resources")
                 || path.startsWith("/webjars")) {
-            filterChain.doFilter(request, response); // Proceed without token check
+            filterChain.doFilter(request, response);
             return;
         }
 
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.replace("Bearer ", "");
-
             try {
-                DecodedJWT jwt = tokenService.validarToken(token); // Validate token
-
+                DecodedJWT jwt = tokenService.validarToken(token);
+                // O subject agora é o 'usuario' (username), não o email.
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
-                                jwt.getSubject(),
+                                jwt.getSubject(), // Deve ser o 'usuario' (username)
                                 null,
-                                Collections.emptyList() // No authorities/roles defined here
+                                Collections.emptyList()
                         );
                 SecurityContextHolder.getContext().setAuthentication(auth);
-
             } catch (Exception e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 for invalid token
-                response.getWriter().write("token invalido");
-                return; // Stop filter chain
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Token invalido"); // Mensagem do exemplo
+                return;
             }
         }
-        // If no header or token is not Bearer type, it will proceed.
-        // If SecurityConfiguration requires authentication for the path, it will be denied later.
         filterChain.doFilter(request, response);
     }
 }

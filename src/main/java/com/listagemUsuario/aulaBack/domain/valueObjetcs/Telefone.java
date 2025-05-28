@@ -10,10 +10,12 @@ public class Telefone {
     public Telefone() {}
 
     public Telefone(String telefone) {
-        if (!isValid(telefone)) {
+        String somenteNumeros = telefone != null ? telefone.replaceAll("\\D", "") : null;
+
+        if (!isValid(somenteNumeros)) {
             throw new IllegalArgumentException("Telefone inválido.");
         }
-        this.telefone = telefone;
+        this.telefone = somenteNumeros;
     }
 
     public String getTelefone() {
@@ -22,7 +24,6 @@ public class Telefone {
 
     private boolean isValid(String telefone) {
         return telefone != null && telefone.matches("\\d{10,11}");
-        // Aceita DDD + número (ex: 11999999999 ou 1122223333)
     }
 
     @Override

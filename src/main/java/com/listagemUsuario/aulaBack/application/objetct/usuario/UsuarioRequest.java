@@ -2,14 +2,14 @@ package com.listagemUsuario.aulaBack.application.objetct.usuario;
 
 public record UsuarioRequest(
         Long id,
-        String usuario,
         String nome,
         String sobrenome,
+        String usuario,
+        String email,
         String telefone,
         String cep,
         String localidade,
         String uf,
-        String email,
-        String senha,
-        String perfil
+        String perfil,
+        String senha
 ) {}
