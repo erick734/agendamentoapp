@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { UsuarioContext } from "../../context/Usuario";
-import axios from "axios";
+import { consultaService } from "../../service/consultaService";
+import { usuarioService } from "../../service/usuarioService";
 
 const horariosFixos = [
   "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
@@ -9,11 +9,8 @@ const horariosFixos = [
   "16:00", "16:30", "17:00", "17:30", "18:00"
 ];
 
-const baseURL = "http://localhost:3001";
-
 export default function AgendamentoConsulta({ consulta, fechar, atualizarConsultas }) {
   const { id } = useParams();
-  const { usuario } = useContext(UsuarioContext);
   const navigate = useNavigate();
 
   const [horario, setHorario] = useState(consulta?.horario || "");
@@ -22,7 +19,10 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
   const [erroTelefone, setErroTelefone] = useState("");
   const [medicos, setMedicos] = useState([]);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState("");
 
+  // ✔️ Validação de telefone
   const validarTelefone = (numero) => {
     const numeroLimpo = numero.replace(/\D/g, "");
     if (numeroLimpo.length < 8 || numeroLimpo.length > 9) {
@@ -35,80 +35,101 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
     setTelefone(numero);
   };
 
-  const carregarDados = useCallback(async () => {
+  // ✔️ Carregar médicos
+  const carregarMedicos = useCallback(async () => {
+    setLoading(true);
     try {
-      const responseMedicos = await axios.get(`${baseURL}/usuario?perfil=m`);
-      setMedicos(responseMedicos.data);
-
-      if (consulta) {
-        setHorario(consulta.horario || "");
-        setMedico(consulta.usuarioMedicoId || "");
-        setTelefone(consulta.telefone || "");
-      }
+      const listaMedicos = await usuarioService.getUsuariosPorPerfil("m");
+      setMedicos(listaMedicos);
     } catch (error) {
       console.error("Erro ao carregar médicos:", error);
-      alert("Erro ao carregar a lista de médicos.");
+      setFormError("Erro ao carregar a lista de médicos.");
+    } finally {
+      setLoading(false);
     }
-  }, [consulta]);
+  }, []);
 
+  // ✔️ Carregar horários disponíveis para o médico selecionado
   const carregarHorarios = useCallback(async () => {
-    if (!medico) return;
-
-    try {
-      const responseConsultas = await axios.get(`${baseURL}/consultas?usuarioMedicoId=${medico}`);
-      const horariosOcupados = responseConsultas.data.map((c) => c.horario);
-      const horariosFiltrados = horariosFixos.filter((h) => !horariosOcupados.includes(h));
-      setHorariosDisponiveis(horariosFiltrados);
-    } catch (error) {
-      console.error("Erro ao carregar horários disponíveis:", error);
+    if (!medico) {
       setHorariosDisponiveis([]);
-      alert("Erro ao carregar os horários disponíveis.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const consultasDoMedico = await consultaService.getConsultas({ usuarioMedicoId: medico });
+      const horariosOcupados = consultasDoMedico.map(c => c.horario);
+      const disponiveis = horariosFixos.filter(h => !horariosOcupados.includes(h));
+      setHorariosDisponiveis(disponiveis);
+    } catch (error) {
+      console.error("Erro ao carregar horários:", error);
+      setHorariosDisponiveis([]);
+    } finally {
+      setLoading(false);
     }
   }, [medico]);
 
-  const handleSalvarOuEditar = useCallback(async (e) => {
+  // ✔️ Salvando ou editando a consulta
+  const handleSalvarOuEditar = async (e) => {
     e.preventDefault();
+    setFormError("");
 
-    const consultaAtualizada = {
+    if (erroTelefone) {
+      setFormError("Corrija o telefone.");
+      return;
+    }
+    // if (!usuario || !usuario.id) {
+    //   setFormError("Usuário não identificado. Faça login novamente.");
+    //   return;
+    // }
+
+    const dadosConsulta = {
       horario,
       usuarioMedicoId: medico,
-      usuarioPacienteId: usuario.id,
+      // usuarioPacienteId: usuario.id,
       telefone,
       confirmada: false,
       cancelada: false,
     };
 
+    setLoading(true);
     try {
-      let response;
       if (consulta?.id) {
-        response = await axios.patch(`${baseURL}/consultas/${consulta.id}`, consultaAtualizada);
+        await consultaService.atualizarConsulta(consulta.id, dadosConsulta);
+        alert("Consulta atualizada com sucesso!");
       } else {
-        response = await axios.post(`${baseURL}/consultas`, consultaAtualizada);
+        await consultaService.criarConsulta(dadosConsulta);
+        alert("Consulta agendada com sucesso!");
       }
-      alert(response.data);
-      fechar();
-      if (typeof atualizarConsultas === "function") {
-        atualizarConsultas();
-      }
+
+      if (typeof fechar === 'function') fechar();
+      if (typeof atualizarConsultas === 'function') atualizarConsultas();
+      navigate('/');
+
     } catch (error) {
-      console.error("Erro ao processar a consulta:", error);
-      alert("Erro ao processar sua solicitação.");
+      console.error("Erro ao salvar:", error);
+      setFormError(error.response?.data?.message || "Erro ao salvar a consulta.");
+    } finally {
+      setLoading(false);
     }
-  }, [consulta, horario, medico, telefone, usuario, fechar, atualizarConsultas]);
+  };
 
-
+  // ✔️ Effects
   useEffect(() => {
-    carregarDados();
-  }, [carregarDados]);
+    carregarMedicos();
+  }, [carregarMedicos]);
 
   useEffect(() => {
     carregarHorarios();
   }, [carregarHorarios]);
 
+  // ✔️ Loader inicial
+  if (loading && !medicos.length) return <p>Carregando dados...</p>;
+
   return (
     <div className="container py-4 d-flex justify-content-center">
       <div className="card shadow-lg p-4 w-100" style={{ maxWidth: "600px" }}>
-        <h2 className="text-center fw-bold mb-1" style={{ lineHeight: "normal", margin: "0" }}>
+        <h2 className="text-center fw-bold mb-1">
           {consulta ? "Editar Consulta" : "Agendamento de Consulta"}
         </h2>
         <p className="text-muted text-center">
@@ -143,10 +164,8 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
               disabled={!medico || horariosDisponiveis.length === 0}
             >
               <option value="">Selecione um horário</option>
-              {horariosDisponiveis.map((h) => (
-                <option key={h} value={h}>
-                  {h}
-                </option>
+              {horariosDisponiveis.map(h => (
+                <option key={h} value={h}>{h}</option>
               ))}
             </select>
           </div>
@@ -164,12 +183,14 @@ export default function AgendamentoConsulta({ consulta, fechar, atualizarConsult
             {erroTelefone && <div className="invalid-feedback">{erroTelefone}</div>}
           </div>
 
+          {formError && <p className="text-danger text-center">{formError}</p>}
+
           <button
             type="submit"
             className="btn btn-primary btn-lg w-100 mt-3"
             disabled={!medico || horariosDisponiveis.length === 0 || !!erroTelefone}
           >
-            {consulta ? "Salvar" : "Agendar"}
+            {loading ? "Salvando..." : (consulta ? "Salvar" : "Agendar")}
           </button>
         </form>
       </div>

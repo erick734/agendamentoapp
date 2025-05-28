@@ -28,12 +28,13 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
+        // Paths exempt from JWT check
         if (path.equals("/auth/login")
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
                 || path.startsWith("/swagger-resources")
                 || path.startsWith("/webjars")) {
-            filterChain.doFilter(request, response);
+            filterChain.doFilter(request, response); // Proceed without token check
             return;
         }
 
@@ -42,22 +43,24 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = header.replace("Bearer ", "");
 
             try {
-                DecodedJWT jwt = tokenService.validarToken(token);
+                DecodedJWT jwt = tokenService.validarToken(token); // Validate token
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
                                 jwt.getSubject(),
                                 null,
-                                Collections.emptyList()
+                                Collections.emptyList() // No authorities/roles defined here
                         );
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
             } catch (Exception e) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 for invalid token
                 response.getWriter().write("token invalido");
-                return;
+                return; // Stop filter chain
             }
         }
+        // If no header or token is not Bearer type, it will proceed.
+        // If SecurityConfiguration requires authentication for the path, it will be denied later.
         filterChain.doFilter(request, response);
     }
 }

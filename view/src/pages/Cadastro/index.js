@@ -30,23 +30,26 @@ export default function Cadastro() {
 
   async function cadastrarUsuario(e) {
     e.preventDefault();
-    if (!usuario || !senha || !endereco.cep || !perfil || !nome || !sobrenome || !telefone) {
-      alert("Por favor, preencha todos os campos!");
-      return;
-    }
-
-    if (erroTelefone) {
-      alert("Corrija o número de telefone antes de continuar.");
-      return;
-    }
+    const payload = {
+      usuario: usuario,
+      email: usuario,
+      senha: senha,
+      perfil: perfil,
+      nome: nome,
+      sobrenome: sobrenome,
+      telefone: telefone,
+      cep: endereco.cep || "",
+      localidade: endereco.localidade || "",
+      uf: endereco.uf || "",
+    };
 
     try {
-      const novoUsuario = { usuario, senha, perfil, endereco, nome, sobrenome, telefone };
-      await axios.post("http://localhost:3001/usuario", novoUsuario);
+      await axios.post("http://localhost:8080/usuario", payload);
       alert("Usuário cadastrado com sucesso!");
       navigate("/login");
     } catch (error) {
-      alert("Erro ao cadastrar o usuário!");
+      console.error("Erro ao cadastrar usuário:", error.response ? error.response.data : error.message);
+      alert("Erro ao cadastrar o usuário! Verifique os dados ou o console para mais detalhes.");
     }
   }
 

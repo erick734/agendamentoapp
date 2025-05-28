@@ -1,15 +1,30 @@
-import DeslogaBotao from '../../pages/Logout'
-import HeaderLink from '../HeaderLink'
-import style from './header.module.css'
+import { useSelector, useDispatch } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { selectUsuario, logout } from '../../redux/authSlice';
 
 export default function Header() {
-    return (
-        <header className={`${style.header} bg-dark`}>
-            <nav>
-                <DeslogaBotao>
-                    
-                </DeslogaBotao>
-            </nav>
-        </header>
-    )
+  const usuario = useSelector(selectUsuario);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
+
+  return (
+    <header>
+      <nav>
+        <Link to="/">Home</Link>
+        {usuario ? (
+          <>
+            <span>Olá, {usuario.nome}!</span>
+            <button onClick={handleLogout}>Sair</button>
+          </>
+        ) : (
+          <Link to="/login">Login</Link>
+        )}
+      </nav>
+    </header>
+  );
 }

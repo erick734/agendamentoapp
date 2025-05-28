@@ -1,12 +1,11 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { UsuarioContext } from "../../context/Usuario";
+import { useNavigate, useParams } from "react-router-dom";
 import BuscaEndereco from "../BuscaEndereco";
 
 export default function EditarPerfil() {
-  const { usuario } = useContext(UsuarioContext);
   const navigate = useNavigate();
+  const { id } = useParams();
 
   const [nome, setNome] = useState("");
   const [sobrenome, setSobrenome] = useState("");
@@ -15,16 +14,26 @@ export default function EditarPerfil() {
   const [endereco, setEndereco] = useState({});
 
   useEffect(() => {
-    if (usuario) {
-      setNome(usuario.nome);
-      setSobrenome(usuario.sobrenome);
-      setTelefone(usuario.telefone);
-      setEndereco(usuario.endereco || {});
+    async function buscarDados() {
+      try {
+        const resposta = await axios.get(`http://localhost:8080/usuario/${id}`);
+        const dados = resposta.data;
+
+        setNome(dados.nome);
+        setSobrenome(dados.sobrenome);
+        setTelefone(dados.telefone);
+        setEndereco(dados.endereco || {});
+      } catch (error) {
+        alert("Erro ao buscar dados do usuário!");
+        navigate("/");
+      }
     }
-  }, [usuario]);
+
+    buscarDados();
+  }, [id, navigate]);
 
   const validarTelefone = (numero) => {
-    const numeroLimpo = numero.replace(/\D/g, ""); // Remove caracteres não numéricos
+    const numeroLimpo = numero.replace(/\D/g, "");
 
     if (numeroLimpo.length < 8 || numeroLimpo.length > 9) {
       setErroTelefone("Número inválido. Digite 8 ou 9 números.");
@@ -36,7 +45,6 @@ export default function EditarPerfil() {
 
     setTelefone(numero);
   };
-
 
   async function atualizarPerfil(e) {
     e.preventDefault();
@@ -54,7 +62,7 @@ export default function EditarPerfil() {
     try {
       const usuarioAtualizado = { nome, sobrenome, telefone, endereco };
 
-      await axios.patch(`http://localhost:8080/usuario/${usuario.id}`, usuarioAtualizado);
+      await axios.patch(`http://localhost:8080/usuario/${id}`, usuarioAtualizado);
       alert("Perfil atualizado com sucesso!");
       navigate("/");
     } catch (error) {

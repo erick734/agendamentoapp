@@ -1,63 +1,67 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUsuarioContext } from "../../context/Usuario";
-import axios from "axios";
+import { useNavigate, Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setAuth } from "../../redux/authSlice";
+import { authService } from "../../service/authService";
 
 export default function Login() {
-  const [usuarioInformado, setUsuarioInformado] = useState("");
+  const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [carregando, setCarregando] = useState(false);
-  const { login } = useUsuarioContext();
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  async function loginSubmit(e) {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!usuarioInformado || !senha) {
-      alert("Por favor, preencha todos os campos!");
+    if (!email || !senha) {
+      alert("Preencha todos os campos!");
       return;
     }
 
     setCarregando(true);
 
     try {
-      const loginRequest = { email: usuarioInformado, senha: senha };
-      const response = await axios.post("http://localhost:8080/auth", loginRequest);
-      login({ email: usuarioInformado, nome: 'Usuário Logado', logado: true });
+      const res = await authService.login({ email, senha });
 
-      alert("Usuário logado com sucesso!");
-      navigate("/");
-
-    } catch (error) {
-      console.error("Erro no login:", error.response ? error.response.data : error.message);
-      alert("Erro ao logar com este usuário! Verifique suas credenciais ou o console para mais detalhes.");
+      if (res.token) {
+        dispatch(setAuth({ token: res.token, usuario: res.usuario, id: res.id }));
+        alert("Login realizado com sucesso!");
+        navigate("/");
+      } else {
+        alert("Token não retornado. Verifique as credenciais.");
+      }
+    } catch (err) {
+      console.error("Erro ao logar:", err.response?.data || err.message);
+      alert("Erro ao logar. Verifique os dados ou o servidor.");
     } finally {
       setCarregando(false);
     }
-  }
+  };
 
   return (
     <div className="d-flex justify-content-center align-items-center vh-100">
       <form
-        onSubmit={loginSubmit}
+        onSubmit={handleSubmit}
         className="p-4 bg-dark text-light rounded shadow-lg"
-        style={{ width: "350px", maxWidth: "100%", overflow: "hidden" }}
+        style={{ width: "350px", maxWidth: "100%" }}
       >
-        <h1 className="text-center fw-bold mb-4">Login</h1>
+        <h2 className="text-center mb-4 fw-bold">Login</h2>
 
         <div className="mb-3">
-          <label className="form-label">Usuário:</label>
+          <label>Email:</label>
           <input
-            type="text"
+            type="email"
             className="form-control"
-            value={usuarioInformado}
-            onChange={(e) => setUsuarioInformado(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             disabled={carregando}
           />
         </div>
 
         <div className="mb-3">
-          <label className="form-label">Senha:</label>
+          <label>Senha:</label>
           <input
             type="password"
             className="form-control"
@@ -71,14 +75,9 @@ export default function Login() {
           {carregando ? "Entrando..." : "Entrar"}
         </button>
 
-        <button
-          type="button"
-          className="btn btn-secondary w-100 mt-2"
-          onClick={() => navigate("/cadastro")}
-          disabled={carregando}
-        >
+        <Link to="/cadastro" className="btn btn-secondary w-100 mt-2">
           Cadastrar
-        </button>
+        </Link>
       </form>
     </div>
   );

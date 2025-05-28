@@ -1,7 +1,4 @@
-import { useUsuarioContext } from "../../context/Usuario";
-
-export default function DeslogaBotao(){ 
-    const {logout} = useUsuarioContext ();
+export default function DeslogaBotao(){
   
     function handleLogout(e){
         e.preventDefault();
