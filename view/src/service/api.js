@@ -1,28 +1,24 @@
 import axios from "axios";
+import store from "../redux/store";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080",
-  headers: {
-    "Content-Type": "application/json",
-  },
+    baseURL:'http://localhost:8080',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+    },
+    responseType: 'json'
 });
 
-api.interceptors.request.use(
-  (config) => {
-    const publicPaths = ["/login", "/auth/login", "/usuario", "/cadastro"];
-    const isPublic = publicPaths.some((path) => config.url.endsWith(path));
+api.interceptors.request.use ((config) => {
+    
+    const token = store.getState().auth.token; 
 
-    if (!isPublic) {
-      const tokenItem = localStorage.getItem("authToken");
-      if (tokenItem) {
-        const token = JSON.parse(tokenItem);
-        config.headers["Authorization"] = `Bearer ${token}`;
-      }
+    if(token && !config.url.includes('/auth')){
+        config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log (token)
+    return config; 
+});
 
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-export default api;
+export default api; 

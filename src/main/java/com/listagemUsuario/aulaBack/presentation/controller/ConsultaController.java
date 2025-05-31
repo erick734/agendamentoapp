@@ -34,7 +34,7 @@ public class ConsultaController {
         return ResponseEntity.status(201).body(novaConsulta);
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/atualizar/{id}")
     public ResponseEntity<Consulta> atualizarConsulta(@PathVariable Long id, @RequestBody ConsultaRequest request) {
         Consulta consultaAtualizada = consultaService.atualizarConsulta(id, request);
         if (consultaAtualizada != null) {
@@ -44,7 +44,7 @@ public class ConsultaController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/deletar/{id}")
     public ResponseEntity<Void> deletarConsulta(@PathVariable Long id) {
         boolean deletado = consultaService.deletarConsulta(id);
         if (deletado) {

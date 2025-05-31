@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import AgendamentoConsulta from "../AgendamentoConsulta";
 import axios from "axios";
+import api from "../../service/api";
 
 const baseURL = "http://localhost:8080";
 
-const getToken = () => localStorage.getItem("authToken");
+const getToken = () => localStorage.getItem("authToken"); //ALTERAR PRA USAR REDUX
 const getUsuario = () => JSON.parse(localStorage.getItem("authUser"));
 
 export default function Consulta() {
@@ -31,7 +32,7 @@ export default function Consulta() {
         },
       };
 
-      const response = await axios.get(`${baseURL}/consultas`, config);
+      const response = await api.get(`${baseURL}/consulta`, config);
       const consultasBase = response.data;
       let consultasFiltradas = [];
 
