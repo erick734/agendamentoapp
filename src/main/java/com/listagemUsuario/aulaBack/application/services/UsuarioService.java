@@ -88,4 +88,11 @@ public class UsuarioService {
                 usuario.getEmail() != null ? usuario.getEmail().getEmail() : null
         );
     }
+
+    public List<UsuarioResponse> listarPorPerfil(String perfil) {
+        var usuarios = usuarioRepository.findByPerfil(perfil);
+        return usuarios.stream()
+                .map(this::toResponse) // Reutiliza seu método privado para formatar a resposta
+                .toList();
+    }
 }

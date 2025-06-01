@@ -1,6 +1,7 @@
 package com.listagemUsuario.aulaBack.presentation.controller;
 
 import com.listagemUsuario.aulaBack.application.objetct.consulta.ConsultaRequest;
+import com.listagemUsuario.aulaBack.application.objetct.consulta.ConsultaResponse;
 import com.listagemUsuario.aulaBack.application.services.ConsultaService;
 import com.listagemUsuario.aulaBack.domain.entities.Consulta;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +18,19 @@ public class ConsultaController {
     private ConsultaService consultaService;
 
     @GetMapping
-    public ResponseEntity<List<Consulta>> listarConsultas() {
-        return ResponseEntity.ok(consultaService.listarConsultas());
+    public ResponseEntity<List<ConsultaResponse>> listarConsultas() {
+        // Supondo que você criou um método no serviço que retorna List<ConsultaResponse>
+        return ResponseEntity.ok(consultaService.listarConsultasFormatado());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Consulta> buscarConsultaPorId(@PathVariable Long id) {
-        return consultaService.buscarPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ConsultaResponse> buscarConsultaPorId(@PathVariable Long id) {
+        // Supondo que você criou um método no serviço que retorna ConsultaResponse
+        ConsultaResponse response = consultaService.buscarPorIdFormatado(id);
+        if (response != null) {
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping

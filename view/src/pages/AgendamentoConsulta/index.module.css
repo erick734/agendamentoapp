@@ -1,0 +1,94 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContent {
+  background-color: #fff;
+  padding: 25px 30px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.modalTitle {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #888;
+  cursor: pointer;
+  padding: 0 5px;
+  line-height: 1;
+}
+
+.closeButton:hover {
+  color: #333;
+}
+
+.formLabel {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+.formSelect,
+.formInput {
+  margin-bottom: 1rem;
+}
+
+.errorMessage {
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.submitButton {
+  padding: 10px 15px;
+  font-size: 1rem;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #888;
+  cursor: pointer;
+  padding: 0 5px;
+  line-height: 1;
+}
+
+.closeButton:hover {
+  color: #333;
+}

@@ -1,147 +1,115 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { selectNome, selectIsAuthenticated } from "../../redux/authSlice";
+import {
+  fetchConsultas,
+  selectAllConsultas,
+  selectConsultasStatus,
+  selectConsultasError,
+} from "../../redux/consultaSlice";
 import AgendamentoConsulta from "../AgendamentoConsulta";
-import axios from "axios";
-import api from "../../service/api";
-
-const baseURL = "http://localhost:8080";
-
-const getToken = () => localStorage.getItem("authToken"); //ALTERAR PRA USAR REDUX
-const getUsuario = () => JSON.parse(localStorage.getItem("authUser"));
 
 export default function Consulta() {
-  const [usuario, setUsuario] = useState(getUsuario());
-  const [consultas, setConsultas] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [erro, setErro] = useState(null);
-  const [consultaSelecionada, setConsultaSelecionada] = useState(null);
-
-  const carregarConsultas = useCallback(async () => {
-    const token = getToken();
-    if (!token || !usuario) {
-      setErro("Usuário não autenticado. Faça login novamente.");
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setErro(null);
-    try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
-      const response = await api.get(`${baseURL}/consulta`, config);
-      const consultasBase = response.data;
-      let consultasFiltradas = [];
-
-      if (usuario.perfil === "p") {
-        consultasFiltradas = consultasBase.filter(
-          (c) => c.usuarioPacienteId === usuario.id
-        );
-      } else if (usuario.perfil === "m") {
-        consultasFiltradas = consultasBase.filter(
-          (c) => c.usuarioMedicoId === usuario.id
-        );
-      } else if (usuario.perfil === "a") {
-        consultasFiltradas = consultasBase;
-      }
-
-      const consultasComDetalhes = await Promise.all(
-        consultasFiltradas.map(async (consulta) => {
-          let medicoData = null;
-          let pacienteData = null;
-
-          try {
-            if (consulta.usuarioMedicoId) {
-              const medicoResponse = await axios.get(
-                `${baseURL}/usuario/${consulta.usuarioMedicoId}`,
-                config
-              );
-              medicoData = medicoResponse.data;
-            }
-          } catch (errMed) {
-            console.warn(
-              `Erro ao buscar médico ${consulta.usuarioMedicoId}:`,
-              errMed.message
-            );
-          }
-
-          try {
-            if (consulta.usuarioPacienteId) {
-              const pacienteResponse = await axios.get(
-                `${baseURL}/usuario/${consulta.usuarioPacienteId}`,
-                config
-              );
-              pacienteData = pacienteResponse.data;
-            }
-          } catch (errPac) {
-            console.warn(
-              `Erro ao buscar paciente ${consulta.usuarioPacienteId}:`,
-              errPac.message
-            );
-          }
-
-          return {
-            ...consulta,
-            nomeMedico: medicoData
-              ? `${medicoData.nome} ${medicoData.sobrenome || ""}`.trim()
-              : "Médico Indisponível",
-            nomePaciente: pacienteData
-              ? `${pacienteData.nome} ${pacienteData.sobrenome || ""}`.trim()
-              : "Paciente Indisponível",
-          };
-        })
-      );
-
-      setConsultas(consultasComDetalhes);
-    } catch (error) {
-      console.error(
-        "Erro ao carregar consultas:",
-        error.response ? error.response.data : error.message
-      );
-      setErro(
-        `Erro ao carregar consultas: ${
-          error.response?.data?.message || error.message
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [usuario]);
+  const dispatch = useDispatch();
+  const [modalAberto, setModalAberto] = useState(false);
+  const userDisplayName = useSelector(selectNome);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const consultas = useSelector(selectAllConsultas);
+  const status = useSelector(selectConsultasStatus);
+  const error = useSelector(selectConsultasError);
 
   useEffect(() => {
-    if (usuario) {
-      carregarConsultas();
-    } else {
-      setConsultas([]);
-      setLoading(false);
-      setErro(null);
+    if (isAuthenticated && status === "idle") {
+      dispatch(fetchConsultas());
     }
-  }, [usuario, carregarConsultas]);
+  }, [status, dispatch, isAuthenticated]);
 
-  const atualizarConsultas = useCallback(() => {
-    if (usuario) {
-      carregarConsultas();
+  const handleAgendamentoRealizado = () => {
+    setModalAberto(false);
+    dispatch(fetchConsultas());
+  };
+
+  const renderContent = () => {
+    if (status === "loading") {
+      return (
+        <div className="text-center my-4">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Carregando...</span>
+          </div>
+        </div>
+      );
     }
-    setConsultaSelecionada(null);
-  }, [usuario, carregarConsultas]);
+
+    if (status === "failed") {
+      return (
+        <div className="alert alert-danger" role="alert">
+          Erro ao carregar consultas: {error}
+        </div>
+      );
+    }
+
+    if (status === "succeeded") {
+      return consultas.length > 0 ? (
+        <ul className="list-group">
+          {consultas.map((consulta) => (
+            <li key={consulta.id} className="list-group-item">
+              <p>
+                <strong>Data:</strong>{" "}
+                {new Date(consulta.dataConsulta).toLocaleString("pt-BR")}
+              </p>
+              <p>
+                <strong>Médico:</strong> {consulta.nomeMedico || "N/A"}
+              </p>
+              <p>
+                <strong>Paciente:</strong> {consulta.nomePaciente || "N/A"}
+              </p>
+              <p>
+                <strong>Status:</strong> {consulta.status}
+              </p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>Nenhuma consulta encontrada.</p>
+      );
+    }
+    
+    if (!isAuthenticated) {
+      return (
+        <div className="alert alert-warning" role="alert">
+          Por favor, faça login para ver suas consultas.
+        </div>
+      )
+    }
+
+    return null;
+  };
 
   return (
     <div className="container py-4">
-      <h1 className="text-center fw-bold mb-1">
-        Bem-vindo, {usuario?.nome || "Usuário"}!
+      <h1 className="text-center fw-bold mb-4">
+        Bem-vindo, {userDisplayName || "Usuário"}!
       </h1>
 
       <div className="card shadow-sm p-4">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2 className="mb-0">Suas Consultas</h2>
+          {isAuthenticated && (
+            <button
+              className="btn btn-primary"
+              onClick={() => setModalAberto(true)}
+            >
+              Agendar Nova Consulta
+            </button>
+          )}
+        </div>
+        {renderContent()}
       </div>
 
-      {consultaSelecionada && (
+      {modalAberto && (
         <AgendamentoConsulta
-          consulta={consultaSelecionada}
-          onClose={() => setConsultaSelecionada(null)}
-          onAgendamentoRealizado={atualizarConsultas}
+          onClose={() => setModalAberto(false)}
+          onAgendamentoRealizado={handleAgendamentoRealizado}
         />
       )}
     </div>

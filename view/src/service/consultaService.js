@@ -40,7 +40,6 @@ const cancelarConsulta = async (id) => {
   return response.data;
 }
 
-
 export const consultaService = {
   getConsultas,
   getConsultaById,

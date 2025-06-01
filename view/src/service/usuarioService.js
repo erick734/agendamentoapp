@@ -2,7 +2,7 @@ import apiClient from "./api";
 
 const cadastrar = async (cadastroRequest) => {
   const response = await apiClient.post("/usuario", cadastroRequest);
-  return response.data; // Mensagem de sucesso ou dados do usuário criado
+  return response.data;
 };
 
 const getUsuarioById = async (id) => {
@@ -11,18 +11,29 @@ const getUsuarioById = async (id) => {
 };
 
 const atualizarPerfil = async (id, perfilData) => {
-  const response = await apiClient.put(`/usuario/${id}/perfil`, perfilData); // Exemplo de endpoint
+  const response = await apiClient.put(`/usuario/${id}`, perfilData);
   return response.data;
-}
+};
 
 const listarUsuarios = async () => {
-  const response = await apiClient.get("/usuario");
+  const response = await apiClient.get("/usuario/listar");
   return response.data;
+};
+
+const getUsuariosPorPerfil = async (perfil) => {
+  try {
+    const response = await apiClient.get(`/usuario/perfil/${perfil}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Erro ao buscar usuários com perfil ${perfil}:`, error);
+    throw error;
+  }
 };
 
 export const usuarioService = {
   cadastrar,
   getUsuarioById,
   atualizarPerfil,
-  listarUsuarios
+  listarUsuarios,
+  getUsuariosPorPerfil,
 };

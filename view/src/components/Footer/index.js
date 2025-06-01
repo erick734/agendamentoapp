@@ -2,15 +2,13 @@ export default function Footer() {
     return (
         <footer
             style={{
-                position: "fixed",
-                bottom: 0,
-                left: 0,
                 width: "100%",
-                backgroundColor: "#343a40",
-                color: "#ffffff",
+                backgroundColor: "#f8f9fa",
+                color: "#6c757d",
                 textAlign: "center",
-                padding: "10px 0",
-
+                padding: "1rem 0",
+                borderTop: "1px solid #dee2e6",
+                marginTop: "auto"
             }}
         >
             <p className="mb-0">

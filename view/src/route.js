@@ -1,42 +1,27 @@
-import { BrowserRouter, Navigate, Route, Routes, Outlet } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { selectIsAuthenticated, selectUsuario } from "./redux/authSlice";
+import { selectIsAuthenticated } from "./redux/authSlice";
+
+// Páginas
 import Cadastro from "./pages/Cadastro";
 import Consulta from "./pages/Consulta";
-import Footer from "./components/Footer";
-import Header from "./components/Header";
-import SideBar from "./components/SideBar";
 import AgendamentoConsulta from "./pages/AgendamentoConsulta";
 import Login from "./pages/Login";
 import EditarPerfil from "./pages/EditarPerfil";
 
+// Layouts
+import ProtectedLayout from "./layouts/ProtectedLayout";
+
+// Rota privada
 function PrivateRoute({ children }) {
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-  return children;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
-function ProtectedLayout() {
-  const usuario = useSelector(selectUsuario);
-  return (
-    <>
-      <Header usuario={usuario} />
-      <div className="d-flex">
-        <SideBar />
-        <div className="flex-grow-1 p-4">
-          <Outlet />
-        </div>
-      </div>
-      <Footer />
-    </>
-  );
-}
-
+// Redirecionamento
 function CatchAllRoute() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  return isAuthenticated ? <Navigate to="/" /> : <Navigate to="/login" />;
+  return <Navigate to={isAuthenticated ? "/" : "/login"} replace />;
 }
 
 export default function AppRoutes() {
@@ -47,7 +32,7 @@ export default function AppRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
 
-        {/* Rotas privadas */}
+        {/* Rotas protegidas */}
         <Route
           element={
             <PrivateRoute>
@@ -61,7 +46,7 @@ export default function AppRoutes() {
           <Route path="agendamento-consulta/:id" element={<AgendamentoConsulta />} />
         </Route>
 
-        {/* Catch all */}
+        {/* Rota catch-all */}
         <Route path="*" element={<CatchAllRoute />} />
       </Routes>
     </BrowserRouter>

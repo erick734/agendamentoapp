@@ -85,4 +85,15 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body("Erro ao deletar usuário: " + e.getMessage());
         }
     }
+
+    @GetMapping("/perfil/{perfil}")
+    @Operation(summary = "Listar usuários por perfil", description = "Retorna a lista de usuários com um perfil específico (ex: 'm' para médico)")
+    public ResponseEntity<?> getUsuariosPorPerfil(@PathVariable String perfil) {
+        try {
+            var usuarios = usuarioService.listarPorPerfil(perfil);
+            return ResponseEntity.ok().body(usuarios);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao listar usuários por perfil: " + e.getMessage());
+        }
+    }
 }

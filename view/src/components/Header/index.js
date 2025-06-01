@@ -1,9 +1,11 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { selectUsuario, logout } from '../../redux/authSlice';
+import { selectNome, logout } from '../../redux/authSlice';
+import { Nav, Navbar, NavDropdown } from 'react-bootstrap';
+import styles from './Header.module.css';
 
 export default function Header() {
-  const usuario = useSelector(selectUsuario);
+  const nomeUsuario = useSelector(selectNome);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -13,18 +15,26 @@ export default function Header() {
   };
 
   return (
-    <header>
-      <nav>
-        <Link to="/">Home</Link>
-        {usuario ? (
-          <>
-            <span>Olá, {usuario.nome}!</span>
-            <button onClick={handleLogout}>Sair</button>
-          </>
-        ) : (
-          <Link to="/login">Login</Link>
-        )}
-      </nav>
-    </header>
+    <Navbar className={styles.navbar} expand="lg">
+      <Navbar.Brand as={Link} to="/">Clínica Senac</Navbar.Brand>
+      <Navbar.Toggle aria-controls="basic-navbar-nav" />
+      <Navbar.Collapse id="basic-navbar-nav" className="justify-content-end">
+        <Nav>
+          {nomeUsuario ? (
+            <NavDropdown title={`Olá, ${nomeUsuario}!`} id="basic-nav-dropdown" align="end" className={styles.userMenu}>
+              <NavDropdown.Item as={Link} to={`/editar-perfil`}>
+                Editar Perfil
+              </NavDropdown.Item>
+              <NavDropdown.Divider />
+              <NavDropdown.Item as="button" onClick={handleLogout}>
+                Sair
+              </NavDropdown.Item>
+            </NavDropdown>
+          ) : (
+            <Nav.Link as={Link} to="/login">Login</Nav.Link>
+          )}
+        </Nav>
+      </Navbar.Collapse>
+    </Navbar>
   );
 }

@@ -78,7 +78,6 @@ const validarTelefone = (numero) => {
         <p className="text-muted text-center">Preencha as informações abaixo.</p>
 
         <form onSubmit={cadastrarUsuario} className="mt-3">
-          {/* Usuário (Login/Email) */}
           <div className="mb-3">
             <label className="form-label fw-bold">Usuário (será seu login/email)</label>
             <input
@@ -91,7 +90,6 @@ const validarTelefone = (numero) => {
             />
           </div>
 
-          {/* Senha */}
           <div className="mb-3">
             <label className="form-label fw-bold">Senha</label>
             <input
@@ -105,7 +103,6 @@ const validarTelefone = (numero) => {
             />
           </div>
 
-          {/* Nome */}
           <div className="mb-3">
             <label className="form-label fw-bold">Nome</label>
             <input
@@ -118,7 +115,6 @@ const validarTelefone = (numero) => {
             />
           </div>
 
-          {/* Sobrenome */}
           <div className="mb-3">
             <label className="form-label fw-bold">Sobrenome</label>
             <input
@@ -131,7 +127,6 @@ const validarTelefone = (numero) => {
             />
           </div>
 
-          {/* Telefone */}
           <div className="mb-3">
             <label className="form-label fw-bold">Telefone</label>
             <input
@@ -146,7 +141,6 @@ const validarTelefone = (numero) => {
             {erroTelefone && <div className="invalid-feedback">{erroTelefone}</div>}
           </div>
 
-          {/* Perfil */}
           <div className="mb-3">
             <label className="form-label fw-bold">Perfil</label>
             <select

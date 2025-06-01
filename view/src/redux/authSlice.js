@@ -28,10 +28,10 @@ const authSlice = createSlice({
 });
 
 export const { setAuth, logout } = authSlice.actions;
-export default authSlice.reducer;
 export const selectToken = (state) => state.auth.token;
 export const selectUsuario = (state) => state.auth.usuario;
 export const selectPerfil = (state) => state.auth.perfil;
 export const selectNome = (state) => state.auth.nome;
 export const selectId = (state) => state.auth.id;
 export const selectIsAuthenticated = (state) => !!state.auth.token;
+export default authSlice.reducer;

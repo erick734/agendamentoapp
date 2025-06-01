@@ -1,38 +1,37 @@
 import { Link } from "react-router-dom";
 import styles from "./sidebar.module.css";
 
-export default function SideBar() {
+export default function SideBar({ expanded, setExpanded }) {
   return (
-    <div className={`${styles.sidebar} text-center d-flex flex-column vh-100 bg-dark text-light`}>
-      <div className={`${styles.sidebarContent} text-center`}>
+    <aside
+      className={`${styles.sidebar} ${expanded ? styles.sidebarExpanded : ''}`}
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}
+    >
+      <div className={styles.sidebarContent}>
         <img
           src="https://www.mg.senac.br/programasenacdegratuidade/assets/img/senac_logo_branco.png"
-          alt="Logo"
-          className="img-fluid mb-2"
-          style={{ maxWidth: "120px" }}
+          alt="Logo Senac"
+          style={{ maxWidth: "120px", margin: "10px auto" }}
         />
         <ul className="nav flex-column">
           <li className="nav-item">
-            <a
-              className="nav-link text-light"
-              data-bs-toggle="collapse"
-              href="#submenuCadastro"
-              role="button"
-              aria-expanded="false"
-              aria-controls="submenuCadastro"
-            >
-              Configurações
-            </a>
-            <ul className="collapse list-unstyled ms-3" id="submenuCadastro">
-              <li>
-                <Link className="nav-link text-light" to="/editar-perfil">
-                  Editar Perfil
-                </Link>
-              </li>
-            </ul>
+            <Link className={styles["nav-link"]} to="/">
+              Consultas
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link className={styles["nav-link"]} to="/agendamento-consulta">
+              Agendar Consulta
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link className={styles["nav-link"]} to="/editar-perfil">
+              Editar Perfil
+            </Link>
           </li>
         </ul>
       </div>
-    </div>
+    </aside>
   );
 }
