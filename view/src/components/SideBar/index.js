@@ -15,7 +15,7 @@ export default function SideBar({ expanded, setExpanded }) {
           style={{ maxWidth: "120px", margin: "10px auto" }}
         />
         <ul className="nav flex-column">
-          <li className="nav-item">
+          {/* <li className="nav-item">
             <Link className={styles["nav-link"]} to="/">
               Consultas
             </Link>
@@ -24,7 +24,7 @@ export default function SideBar({ expanded, setExpanded }) {
             <Link className={styles["nav-link"]} to="/agendamento-consulta">
               Agendar Consulta
             </Link>
-          </li>
+          </li> */}
           <li className="nav-item">
             <Link className={styles["nav-link"]} to="/editar-perfil">
               Editar Perfil

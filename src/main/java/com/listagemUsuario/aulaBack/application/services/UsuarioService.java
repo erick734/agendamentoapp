@@ -11,7 +11,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -92,7 +91,7 @@ public class UsuarioService {
     public List<UsuarioResponse> listarPorPerfil(String perfil) {
         var usuarios = usuarioRepository.findByPerfil(perfil);
         return usuarios.stream()
-                .map(this::toResponse) // Reutiliza seu método privado para formatar a resposta
+                .map(this::toResponse)
                 .toList();
     }
 }

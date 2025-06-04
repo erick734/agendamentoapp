@@ -19,13 +19,11 @@ public class ConsultaController {
 
     @GetMapping
     public ResponseEntity<List<ConsultaResponse>> listarConsultas() {
-        // Supondo que você criou um método no serviço que retorna List<ConsultaResponse>
         return ResponseEntity.ok(consultaService.listarConsultasFormatado());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ConsultaResponse> buscarConsultaPorId(@PathVariable Long id) {
-        // Supondo que você criou um método no serviço que retorna ConsultaResponse
         ConsultaResponse response = consultaService.buscarPorIdFormatado(id);
         if (response != null) {
             return ResponseEntity.ok(response);
