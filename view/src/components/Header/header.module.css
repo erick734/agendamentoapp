@@ -1,21 +1,15 @@
-.navbar {
-  background-color: #fff;
-  border-bottom: 1px solid #e7e7e7;
-  padding: 0.5rem 1rem;
-}
-
-.userMenu a {
-  color: #333 !important;
-}
-
-.userMenu button {
-  width: 100%;
-  text-align: left;
-  background: none;
+.logoutButton {
+  background-color: #dc3545;
+  color: #fff !important;
+  padding: 8px 15px;
   border: none;
-  padding: 0.25rem 1rem;
+  border-radius: 5px;
+  font-weight: bold;
+  line-height: 1.5;
+  transition: background-color 0.2s ease-in-out;
 }
 
-.userMenu button:hover {
-  background-color: #f8f9fa;
+.logoutButton:hover {
+  background-color: #c82333;
+  color: #fff !important;
 }

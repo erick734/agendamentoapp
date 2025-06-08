@@ -92,7 +92,7 @@ public class UsuarioService {
     public List<UsuarioResponse> listarPorPerfil(String perfil) {
         var usuarios = usuarioRepository.findByPerfil(perfil);
         return usuarios.stream()
-                .map(this::toResponse) // Reutiliza seu método privado para formatar a resposta
+                .map(this::toResponse)
                 .toList();
     }
 }
