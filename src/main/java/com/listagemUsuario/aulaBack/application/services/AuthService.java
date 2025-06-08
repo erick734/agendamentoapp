@@ -2,31 +2,25 @@ package com.listagemUsuario.aulaBack.application.services;
 
 import com.listagemUsuario.aulaBack.application.objetct.usuario.LoginRequest;
 import com.listagemUsuario.aulaBack.application.objetct.usuario.LoginResponse;
-import com.listagemUsuario.aulaBack.domain.entities.Usuario;
 import com.listagemUsuario.aulaBack.domain.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
 
     @Autowired
-    private TokenService tokenService;
-
-    @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public LoginResponse login(LoginRequest loginRequest) {
-        Usuario usuario = usuarioRepository.findByUsuarioIgnoreCase(loginRequest.usuario())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
+    @Autowired
+    private TokenService tokenService;
 
-        if (!usuario.getSenha().equals(loginRequest.senha())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Senha incorreta");
-        }
+    public LoginResponse login(LoginRequest request) {
+        // Usa o método com a query corrigida para buscar por e-mail e senha em texto puro
+        var usuario = usuarioRepository.findByEmailAndSenha(request.usuario(), request.senha())
+                .orElseThrow(() -> new RuntimeException("E-mail ou senha inválidos."));
 
-        String token = tokenService.gerarToken(usuario);
+        var token = tokenService.gerarToken(usuario);
 
         return new LoginResponse(
                 usuario.getId(),

@@ -20,19 +20,19 @@ export default function Cadastro() {
 
   const navigate = useNavigate();
 
-const validarTelefone = (numero) => {
-  const numeroLimpo = numero.replace(/\D/g, "");
+  const validarTelefone = (numero) => {
+    const numeroLimpo = numero.replace(/\D/g, "");
 
-  if (numeroLimpo.length < 10 || numeroLimpo.length > 11) {
-    setErroTelefone("Número inválido. Inclua o DDD.");
-  } else if (numeroLimpo.length === 11 && numeroLimpo[2] !== "9") {
-    setErroTelefone("Celular deve ter o nono dígito (ex: 9XXXX...).");
-  } else {
-    setErroTelefone("");
-  }
+    if (numeroLimpo.length < 10 || numeroLimpo.length > 11) {
+      setErroTelefone("Número inválido. Inclua o DDD.");
+    } else if (numeroLimpo.length === 11 && numeroLimpo[2] !== "9") {
+      setErroTelefone("Celular deve ter o nono dígito (ex: 9XXXX...).");
+    } else {
+      setErroTelefone("");
+    }
 
-  setTelefone(numero);
-};
+    setTelefone(numero);
+  };
 
   async function cadastrarUsuario(e) {
     e.preventDefault();
@@ -43,7 +43,6 @@ const validarTelefone = (numero) => {
     setCarregando(true);
 
     const payload = {
-      usuario: usuario,
       email: usuario,
       senha: senha,
       perfil: perfil,

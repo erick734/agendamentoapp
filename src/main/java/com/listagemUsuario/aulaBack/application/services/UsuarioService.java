@@ -11,7 +11,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -28,8 +27,15 @@ public class UsuarioService {
         return toResponse(usuarioLogado);
     }
 
+    public UsuarioResponse buscarPorId(Long id) {
+        var usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com o ID: " + id));
+        return toResponse(usuario);
+    }
+
     public Usuario salvar(UsuarioRequest entrada) {
         var usuario = new Usuario(entrada);
+        usuario.setSenha(entrada.senha());
         return usuarioRepository.save(usuario);
     }
 
@@ -40,8 +46,8 @@ public class UsuarioService {
                 .toList();
     }
 
-    public UsuarioResponse usuarioEditado(UsuarioRequest entrada) {
-        var usuarioEncontrado = usuarioRepository.findById(entrada.id());
+    public UsuarioResponse usuarioEditado(Long id, UsuarioRequest entrada) {
+        var usuarioEncontrado = usuarioRepository.findById(id);
 
         if (usuarioEncontrado.isPresent()) {
             var usuario = usuarioEncontrado.get();
@@ -51,16 +57,20 @@ public class UsuarioService {
             usuario.setCep(entrada.cep());
             usuario.setLocalidade(entrada.localidade());
             usuario.setUf(entrada.uf());
-            usuario.setEmail(new Email(entrada.email()));
+
+            if (entrada.email() != null && !entrada.email().isEmpty()) {
+                usuario.setEmail(new Email(entrada.email()));
+            }
+
             if (entrada.senha() != null && !entrada.senha().isEmpty()) {
                 usuario.setSenha(entrada.senha());
             }
-            usuarioRepository.save(usuario);
 
+            usuarioRepository.save(usuario);
             return toResponse(usuario);
         }
 
-        throw new RuntimeException("Erro ao encontrar o usuário");
+        throw new RuntimeException("Erro: Usuário com ID " + id + " não encontrado para atualização.");
     }
 
     public Long deletar(Long id) {

@@ -27,19 +27,24 @@ export default function Login() {
 
     try {
       const res = await authService.login({ usuario, senha });
-      dispatch(
-        setAuth({
-          token: res.token,
-          usuario,
+
+      const authPayload = {
+        token: res.token,
+        user: {
           id: res.id,
-          perfil: res.perfil,
           nome: res.nome,
-        })
-      );
+          perfil: res.perfil,
+          email: usuario, 
+        }
+      };
+
+      dispatch(setAuth(authPayload));
+      
       navigate("/");
+
     } catch (err) {
       const mensagemErro =
-        err.response?.data?.message || "Usuário ou senha inválidos.";
+        err.response?.data?.message || err.response?.data || "E-mail ou senha inválidos.";
       setErro(mensagemErro);
       console.error("Erro ao logar:", err.response?.data || err.message);
     } finally {
@@ -55,7 +60,6 @@ export default function Login() {
     <div className={styles.loginContainer}>
       <form onSubmit={handleSubmit} className={styles.formWrapper}>
         <h2 className={styles.formTitle}>Bem-vindo!</h2>
-
         <div className={styles.inputGroup}>
           <label>Usuário</label>
           <input
@@ -67,7 +71,6 @@ export default function Login() {
             required
           />
         </div>
-
         <div className={styles.inputGroup}>
           <label>Senha</label>
           <input
@@ -79,9 +82,7 @@ export default function Login() {
             required
           />
         </div>
-
         {erro && <div className={styles.alertErro}>{erro}</div>}
-
         <button
           type="submit"
           className={styles.btnPrimary}
@@ -89,7 +90,6 @@ export default function Login() {
         >
           {carregando ? "Entrando..." : "Entrar"}
         </button>
-
         <button
           type="button"
           className={styles.btnSecondary}

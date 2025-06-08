@@ -17,50 +17,39 @@ import java.util.Collections;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-
     @Autowired
     private TokenService tokenService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
-
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        // 🔥 Ignorar endpoints públicos
+        // Ignora rotas públicas
         if (path.startsWith("/auth")
-                || path.startsWith("/usuario")
+                || (path.equals("/usuario") && request.getMethod().equals("POST"))
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
+                || path.startsWith("/webjars")
                 || path.startsWith("/swagger-resources")
-                || path.startsWith("/webjars")) {
+        ) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 🔐 Verificar token
         String header = request.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.replace("Bearer ", "");
-            try {
-                DecodedJWT jwt = tokenService.validarToken(token);
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                jwt.getSubject(),
-                                null,
-                                Collections.emptyList()
-                        );
+            DecodedJWT jwt = tokenService.validarToken(token);
+
+            if (jwt != null) {
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                        jwt.getSubject(),
+                        null,
+                        Collections.emptyList()
+                );
                 SecurityContextHolder.getContext().setAuthentication(auth);
-            } catch (Exception e) {
-                // 🔥 Token inválido
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token inválido");
-                return;
             }
         }
-
         filterChain.doFilter(request, response);
     }
 }

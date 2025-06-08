@@ -19,7 +19,7 @@ public class ConsultaService {
     @Autowired
     private ConsultaRepository consultaRepository;
 
-    @Autowired // Adicione esta injeção se ainda não tiver
+    @Autowired
     private UsuarioRepository usuarioRepository;
 
     public List<ConsultaResponse> listarConsultasFormatado() {
@@ -40,23 +40,18 @@ public class ConsultaService {
         response.setId(consulta.getId());
         response.setDataHora(consulta.getDataHora());
         response.setDescricao(consulta.getDescricao());
-        // response.setStatus(consulta.getStatus()); // Removido/Comentado: Campo status não existe na entidade Consulta
 
-        // Buscar e setar nome do paciente
         if (consulta.getIdPaciente() != null) {
             Optional<Usuario> pacienteOpt = usuarioRepository.findById(consulta.getIdPaciente());
             if (pacienteOpt.isPresent()) {
                 Usuario paciente = pacienteOpt.get();
                 response.setIdPaciente(paciente.getId());
-                // Assumindo que sua entidade Usuario tem getNome() e getSobrenome()
-                // ou um método como getNomeCompleto()
                 response.setNomePaciente(paciente.getNome() + " " + (paciente.getSobrenome() != null ? paciente.getSobrenome() : ""));
             } else {
                 response.setNomePaciente("Paciente não encontrado"); // Ou alguma outra lógica
             }
         }
 
-        // Buscar e setar nome do médico
         if (consulta.getIdMedico() != null) {
             Optional<Usuario> medicoOpt = usuarioRepository.findById(consulta.getIdMedico());
             if (medicoOpt.isPresent()) {
@@ -77,8 +72,6 @@ public class ConsultaService {
         consulta.setDescricao(request.getDescricao());
         consulta.setIdPaciente(request.getIdPaciente());
         consulta.setIdMedico(request.getIdMedico());
-        // Se você adicionar um campo 'status' à entidade Consulta, defina um valor padrão aqui
-        // consulta.setStatus("AGENDADA"); // Exemplo
         return consultaRepository.save(consulta);
     }
 
@@ -104,8 +97,6 @@ public class ConsultaService {
         return false;
     }
 
-    // Métodos que retornam a entidade Consulta pura, caso ainda precise deles em algum lugar.
-    // Considere se eles ainda são necessários ou se todos os consumers devem usar os métodos formatados.
     public List<Consulta> listarConsultas() {
         return consultaRepository.findAll();
     }

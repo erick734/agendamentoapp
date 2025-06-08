@@ -17,6 +17,17 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
+    @GetMapping("/{id}")
+    @Operation(summary = "Obter usuário por ID", description = "Retorna os dados de um usuário específico pelo seu ID")
+    public ResponseEntity<?> getUsuarioPorId(@PathVariable Long id) {
+        try {
+            UsuarioResponse usuario = usuarioService.buscarPorId(id);
+            return ResponseEntity.ok(usuario);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao buscar usuário: " + e.getMessage());
+        }
+    }
+
     @PostMapping
     @Operation(summary = "Salvar usuário", description = "Método responsável por salvar um novo usuário")
     public ResponseEntity<?> salvar(@RequestBody UsuarioRequest usuarioRequest) {
@@ -54,21 +65,7 @@ public class UsuarioController {
     @Operation(summary = "Atualizar usuário", description = "Atualiza dados do usuário pelo ID")
     public ResponseEntity<?> atualizar(@PathVariable Long id, @RequestBody UsuarioRequest usuarioAtualizado) {
         try {
-            var usuarioRequestComId = new UsuarioRequest(
-                    id,
-                    usuarioAtualizado.usuario(),
-                    usuarioAtualizado.nome(),
-                    usuarioAtualizado.sobrenome(),
-                    usuarioAtualizado.telefone(),
-                    usuarioAtualizado.cep(),
-                    usuarioAtualizado.localidade(),
-                    usuarioAtualizado.uf(),
-                    usuarioAtualizado.email(),
-                    usuarioAtualizado.senha(),
-                    usuarioAtualizado.perfil()
-            );
-
-            var usuarioEditado = usuarioService.usuarioEditado(usuarioRequestComId);
+            var usuarioEditado = usuarioService.usuarioEditado(id, usuarioAtualizado);
             return ResponseEntity.ok().body(usuarioEditado);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao atualizar usuário: " + e.getMessage());

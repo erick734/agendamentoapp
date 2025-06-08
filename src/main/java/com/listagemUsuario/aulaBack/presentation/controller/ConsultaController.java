@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/consulta")
+@RequestMapping("/consultas")
 public class ConsultaController {
 
     @Autowired
@@ -19,13 +19,11 @@ public class ConsultaController {
 
     @GetMapping
     public ResponseEntity<List<ConsultaResponse>> listarConsultas() {
-        // Supondo que você criou um método no serviço que retorna List<ConsultaResponse>
         return ResponseEntity.ok(consultaService.listarConsultasFormatado());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ConsultaResponse> buscarConsultaPorId(@PathVariable Long id) {
-        // Supondo que você criou um método no serviço que retorna ConsultaResponse
         ConsultaResponse response = consultaService.buscarPorIdFormatado(id);
         if (response != null) {
             return ResponseEntity.ok(response);
@@ -39,7 +37,7 @@ public class ConsultaController {
         return ResponseEntity.status(201).body(novaConsulta);
     }
 
-    @PutMapping("/atualizar/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Consulta> atualizarConsulta(@PathVariable Long id, @RequestBody ConsultaRequest request) {
         Consulta consultaAtualizada = consultaService.atualizarConsulta(id, request);
         if (consultaAtualizada != null) {
@@ -49,7 +47,7 @@ public class ConsultaController {
         }
     }
 
-    @DeleteMapping("/deletar/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarConsulta(@PathVariable Long id) {
         boolean deletado = consultaService.deletarConsulta(id);
         if (deletado) {

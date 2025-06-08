@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
 import { consultaService } from "../../service/consultaService";
 import { usuarioService } from "../../service/usuarioService";
-import styles from "./index.module.css"; 
+import styles from "./index.module.css";
 
 const horariosFixos = [
   "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
@@ -11,17 +12,33 @@ const horariosFixos = [
 
 export default function AgendamentoConsulta({ consulta: consultaProp, onClose, onAgendamentoRealizado }) {
   
-  const [dataConsulta, setDataConsulta] = useState(consultaProp?.dataHora ? consultaProp.dataHora.split('T')[0] : new Date().toISOString().split('T')[0]);
-  const [horario, setHorario] = useState(consultaProp?.dataHora ? consultaProp.dataHora.split('T')[1].substring(0,5) : "");
-  const [idMedico, setIdMedico] = useState(consultaProp?.idMedico || "");
-  const [descricao, setDescricao] = useState(consultaProp?.descricao || "");
+  // 1. Buscando o usuário logado do Redux
+  const usuarioLogado = useSelector(state => state.auth.user);
 
+  // 2. Inicializando o estado (pode começar vazio ou com valores padrão)
+  const [dataConsulta, setDataConsulta] = useState(new Date().toISOString().split('T')[0]);
+  const [horario, setHorario] = useState("");
+  const [idMedico, setIdMedico] = useState("");
+  const [descricao, setDescricao] = useState("");
+  
   const [medicos, setMedicos] = useState([]);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState(horariosFixos);
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const [loadingMedicos, setLoadingMedicos] = useState(false);
   const [loadingHorarios, setLoadingHorarios] = useState(false);
+
+  // ✨ CORREÇÃO PRINCIPAL PARA EDIÇÃO ✨
+  // 3. Usando useEffect para preencher o formulário se estiver em modo de edição
+  useEffect(() => {
+    if (consultaProp) {
+      // Se consultaProp existe, estamos editando. Então, preenchemos os campos.
+      setDataConsulta(consultaProp.dataHora ? consultaProp.dataHora.split('T')[0] : '');
+      setHorario(consultaProp.dataHora ? consultaProp.dataHora.split('T')[1].substring(0, 5) : '');
+      setIdMedico(consultaProp.idMedico || '');
+      setDescricao(consultaProp.descricao || '');
+    }
+  }, [consultaProp]); // Este efeito roda sempre que a 'consultaProp' mudar.
 
   const carregarMedicos = useCallback(async () => {
     setLoadingMedicos(true);
@@ -81,6 +98,11 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
     e.preventDefault();
     setFormError("");
 
+    if (!usuarioLogado || !usuarioLogado.id) {
+        setFormError("Erro: Usuário não identificado. Por favor, faça o login novamente.");
+        return;
+    }
+
     if (!dataConsulta || !horario || !idMedico) {
         setFormError("Por favor, preencha a data, horário e selecione um médico.");
         return;
@@ -88,9 +110,11 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
 
     const dataHoraCompleta = `${dataConsulta}T${horario}:00`;
 
+    // ✨ CORRIGIDO: idPaciente é adicionado dinamicamente
     const dadosConsulta = {
       dataHora: dataHoraCompleta,
       idMedico: parseInt(idMedico),
+      idPaciente: usuarioLogado.id, 
       descricao: descricao,
     };
 
@@ -115,9 +139,8 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
       setLoading(false);
     }
   };
-
+  
   const handleOverlayClick = (e) => {
-
     if (e.target === e.currentTarget) {
       if (typeof onClose === 'function') onClose();
     }
@@ -126,7 +149,6 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
   return (
     <div className={styles.modalOverlay} onClick={handleOverlayClick}>
       <div className={styles.modalContent}>
-        
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>
             {consultaProp ? "Editar Consulta" : "Agendar Consulta"}
@@ -135,90 +157,39 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
             &times;
           </button>
         </div>
-
         <form onSubmit={handleSalvarOuEditar} className="mt-3">
+          {/* O JSX do formulário continua o mesmo */}
           <div className="mb-3">
             <label htmlFor="medico" className={`form-label ${styles.formLabel}`}>Médico</label>
-            <select
-              id="medico"
-              className={`form-select form-select-lg ${styles.formSelect}`}
-              value={idMedico}
-              onChange={(e) => setIdMedico(e.target.value)}
-              disabled={loadingMedicos}
-              required
-            >
+            <select id="medico" className={`form-select form-select-lg ${styles.formSelect}`} value={idMedico} onChange={(e) => setIdMedico(e.target.value)} disabled={loadingMedicos} required >
               <option value="">{loadingMedicos ? "Carregando médicos..." : "Selecione um médico"}</option>
-              {medicos.map((med) => (
-                <option key={med.id} value={med.id}>
-                  {med.nome} {med.sobrenome || ""}
-                </option>
-              ))}
+              {medicos.map((med) => (<option key={med.id} value={med.id}>{med.nome} {med.sobrenome || ""}</option>))}
             </select>
           </div>
-
           <div className="row">
             <div className="col-md-6 mb-3">
-                <label htmlFor="dataConsulta" className={`form-label ${styles.formLabel}`}>Data</label>
-                <input
-                    type="date"
-                    id="dataConsulta"
-                    className={`form-control form-control-lg ${styles.formInput}`}
-                    value={dataConsulta}
-                    onChange={(e) => setDataConsulta(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    required
-                    disabled={!idMedico}
-                />
+              <label htmlFor="dataConsulta" className={`form-label ${styles.formLabel}`}>Data</label>
+              <input type="date" id="dataConsulta" className={`form-control form-control-lg ${styles.formInput}`} value={dataConsulta} onChange={(e) => setDataConsulta(e.target.value)} min={new Date().toISOString().split('T')[0]} required disabled={!idMedico} />
             </div>
             <div className="col-md-6 mb-3">
-                <label htmlFor="horario" className={`form-label ${styles.formLabel}`}>Horário</label>
-                <select
-                    id="horario"
-                    className={`form-select form-select-lg ${styles.formSelect}`}
-                    value={horario}
-                    onChange={(e) => setHorario(e.target.value)}
-                    disabled={!idMedico || !dataConsulta || loadingHorarios || horariosDisponiveis.length === 0}
-                    required
-                >
+              <label htmlFor="horario" className={`form-label ${styles.formLabel}`}>Horário</label>
+              <select id="horario" className={`form-select form-select-lg ${styles.formSelect}`} value={horario} onChange={(e) => setHorario(e.target.value)} disabled={!idMedico || !dataConsulta || loadingHorarios || horariosDisponiveis.length === 0} required>
                 <option value="">{loadingHorarios ? "Verificando..." : "Selecione um horário"}</option>
-                {horariosDisponiveis.map(h => (
-                    <option key={h} value={h}>{h}</option>
-                ))}
-                </select>
-                {horariosDisponiveis.length === 0 && idMedico && dataConsulta && !loadingHorarios && (
-                    <small className="text-muted d-block mt-1">Nenhum horário disponível.</small>
-                )}
+                {horariosDisponiveis.map(h => (<option key={h} value={h}>{h}</option>))}
+              </select>
+              {horariosDisponiveis.length === 0 && idMedico && dataConsulta && !loadingHorarios && (<small className="text-muted d-block mt-1">Nenhum horário disponível.</small>)}
             </div>
           </div>
-
           <div className="mb-3">
             <label htmlFor="descricao" className={`form-label ${styles.formLabel}`}>Descrição (Opcional)</label>
-            <textarea
-              id="descricao"
-              className={`form-control ${styles.formInput}`}
-              rows="3"
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-              placeholder="Ex: Retorno, Check-up anual, Dor de cabeça"
-            />
+            <textarea id="descricao" className={`form-control ${styles.formInput}`} rows="3" value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex: Retorno, Check-up anual, Dor de cabeça" />
           </div>
-
           {formError && <p className={styles.errorMessage}>{formError}</p>}
-
           <div className="d-grid gap-2">
-            <button
-                type="submit"
-                className={`btn btn-primary btn-lg ${styles.submitButton}`}
-                disabled={loading || loadingMedicos || loadingHorarios || !idMedico || !dataConsulta || !horario}
-            >
+            <button type="submit" className={`btn btn-primary btn-lg ${styles.submitButton}`} disabled={loading || loadingMedicos || loadingHorarios || !idMedico || !dataConsulta || !horario}>
                 {loading ? "Salvando..." : (consultaProp ? "Salvar Alterações" : "Agendar Consulta")}
             </button>
-            <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={onClose}
-                disabled={loading}
-            >
+            <button type="button" className="btn btn-outline-secondary" onClick={onClose} disabled={loading}>
                 Cancelar
             </button>
           </div>

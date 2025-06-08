@@ -3,9 +3,12 @@ package com.listagemUsuario.aulaBack.application.services;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTCreationException;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-// import com.listagemUsuario.aulaBack.domain.repository.TokenRepository; // Exemplo tem, mas não usa no TokenService
 import com.listagemUsuario.aulaBack.domain.entities.Usuario;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +19,9 @@ import java.time.ZoneOffset;
 @Service
 public class TokenService {
 
-    @Value("${spring.expiration_time}") // Exemplo: 5 (interpretado como dias)
+    private static final Logger logger = LoggerFactory.getLogger(TokenService.class);
+
+    @Value("${spring.expiration_time}")
     private Long expirationTime;
 
     @Value("${spring.secretkey}")
@@ -25,23 +30,17 @@ public class TokenService {
     @Value("${spring.emissor}")
     private String emissor;
 
-    // Exemplo tem @Autowired TokenRepository, mas não o usa nos métodos fornecidos.
-    // Se não for usar, pode omitir.
-    // @Autowired
-    // private TokenRepository tokenRepository;
-
-    public String gerarToken(Usuario loginRequest) { // Usa LoginRequest para pegar o 'usuario'
+    public String gerarToken(Usuario usuario) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
-            String token = JWT.create()
+            return JWT.create()
                     .withIssuer(emissor)
-                    .withSubject(loginRequest.getUsuario()) // USA O CAMPO 'usuario' DO LOGIN REQUEST
+                    .withSubject(usuario.getEmail().getEmail())
+                    .withClaim("perfil", usuario.getPerfil())
                     .withExpiresAt(this.gerarDataExpiracao())
                     .sign(algorithm);
-            return token;
-        } catch (Exception e) {
-            // Logar exceção e.printStackTrace(); ou logger.error("Erro ao gerar token", e);
-            throw new RuntimeException("Erro ao gerar token JWT", e);
+        } catch (JWTCreationException exception) {
+            throw new RuntimeException("Erro ao gerar token JWT", exception);
         }
     }
 
@@ -52,16 +51,15 @@ public class TokenService {
                     .withIssuer(emissor)
                     .build();
             return verifier.verify(token);
-        } catch (Exception e) {
-            // logger.warn("Token JWT inválido ou expirado: {}", e.getMessage());
-            throw new RuntimeException("Token JWT inválido ou expirado", e);
+        } catch (JWTVerificationException exception) {
+            logger.warn("Tentativa de validação de token JWT falhou: {}", exception.getMessage());
+            return null;
         }
     }
 
-    public Instant gerarDataExpiracao() {
-        // Exemplo usa plusDays. Se expirationTime = 5, são 5 dias.
+    private Instant gerarDataExpiracao() {
         return LocalDateTime.now()
-                .plusDays(expirationTime) // Use plusHours, plusMinutes se preferir
-                .toInstant(ZoneOffset.of("-03:00")); // Ajuste o ZoneOffset para o seu fuso horário se necessário (Brasília é -03:00)
+                .plusDays(expirationTime)
+                .toInstant(ZoneOffset.of("-03:00"));
     }
 }
