@@ -30,10 +30,22 @@ const getUsuariosPorPerfil = async (perfil) => {
   }
 };
 
+const alterarEmail = async (data) => {
+    const response = await apiClient.patch("/usuario/alterar-email", data);
+    return response.data;
+};
+
+const alterarSenha = async (data) => {
+    const response = await apiClient.patch("/usuario/alterar-senha", data);
+    return response.data;
+};
+
 export const usuarioService = {
   cadastrar,
   getUsuarioById,
   atualizarPerfil,
   listarUsuarios,
   getUsuariosPorPerfil,
+  alterarEmail,
+  alterarSenha,
 };

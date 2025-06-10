@@ -1,20 +1,22 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import api from "../service/api";
+import apiClient from "../service/api"; 
 
 export const fetchConsultas = createAsyncThunk(
   "consultas/fetchConsultas",
   async (_, { getState }) => {
-    const { id: userId, perfil: userPerfil } = getState().auth;
+    const user = getState().auth.user;
 
-    let url = "/consulta";
+    if (!user) return [];
 
-    if (userPerfil === "p") {
-      url += `?pacienteId=${userId}`;
-    } else if (userPerfil === "m") {
-      url += `?medicoId=${userId}`;
+    let url = "/consultas";
+
+    if (user.perfil === "p") {
+      url = `/consultas/paciente/${user.id}`;
+    } else if (user.perfil === "m") {
+      url = `/consultas/medico/${user.id}`;
     }
 
-    const response = await api.get(url);
+    const response = await apiClient.get(url);
     return response.data;
   }
 );

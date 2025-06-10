@@ -12,10 +12,8 @@ const horariosFixos = [
 
 export default function AgendamentoConsulta({ consulta: consultaProp, onClose, onAgendamentoRealizado }) {
   
-  // 1. Buscando o usuário logado do Redux
   const usuarioLogado = useSelector(state => state.auth.user);
 
-  // 2. Inicializando o estado (pode começar vazio ou com valores padrão)
   const [dataConsulta, setDataConsulta] = useState(new Date().toISOString().split('T')[0]);
   const [horario, setHorario] = useState("");
   const [idMedico, setIdMedico] = useState("");
@@ -28,28 +26,23 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
   const [loadingMedicos, setLoadingMedicos] = useState(false);
   const [loadingHorarios, setLoadingHorarios] = useState(false);
 
-  // ✨ CORREÇÃO PRINCIPAL PARA EDIÇÃO ✨
-  // 3. Usando useEffect para preencher o formulário se estiver em modo de edição
   useEffect(() => {
     if (consultaProp) {
-      // Se consultaProp existe, estamos editando. Então, preenchemos os campos.
       setDataConsulta(consultaProp.dataHora ? consultaProp.dataHora.split('T')[0] : '');
       setHorario(consultaProp.dataHora ? consultaProp.dataHora.split('T')[1].substring(0, 5) : '');
       setIdMedico(consultaProp.idMedico || '');
       setDescricao(consultaProp.descricao || '');
     }
-  }, [consultaProp]); // Este efeito roda sempre que a 'consultaProp' mudar.
+  }, [consultaProp]);
 
   const carregarMedicos = useCallback(async () => {
     setLoadingMedicos(true);
-    setFormError("");
     try {
       const listaMedicos = await usuarioService.getUsuariosPorPerfil("m");
       setMedicos(listaMedicos || []);
     } catch (error) {
       console.error("Erro ao carregar médicos:", error);
       setFormError("Falha ao carregar a lista de médicos.");
-      setMedicos([]);
     } finally {
       setLoadingMedicos(false);
     }
@@ -63,14 +56,14 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
     setLoadingHorarios(true);
     setFormError("");
     try {
-      const todasConsultas = await consultaService.getConsultas();
-      const horariosOcupadosNaData = todasConsultas
-        .filter(c => c.idMedico === parseInt(medicoId) && c.dataHora && c.dataHora.startsWith(data))
-        .map(c => c.dataHora.split('T')[1].substring(0,5));
+      const consultasDoMedico = await consultaService.getConsultasPorMedico(medicoId);
+      const horariosOcupadosNaData = consultasDoMedico
+        .filter(c => c.dataHora && c.dataHora.startsWith(data))
+        .map(c => c.dataHora.split('T')[1].substring(0, 5));
 
       const disponiveis = horariosFixos.filter(h => !horariosOcupadosNaData.includes(h));
       setHorariosDisponiveis(disponiveis);
-      if (disponiveis.length === 0 && medicoId && data) {
+      if (disponiveis.length === 0) {
         setFormError("Nenhum horário disponível para este médico nesta data.");
       }
     } catch (error) {
@@ -89,8 +82,6 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
   useEffect(() => {
     if (idMedico && dataConsulta) {
       carregarHorariosDisponiveis(idMedico, dataConsulta);
-    } else {
-      setHorariosDisponiveis(horariosFixos);
     }
   }, [idMedico, dataConsulta, carregarHorariosDisponiveis]);
 
@@ -98,7 +89,7 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
     e.preventDefault();
     setFormError("");
 
-    if (!usuarioLogado || !usuarioLogado.id) {
+    if (!usuarioLogado?.id) {
         setFormError("Erro: Usuário não identificado. Por favor, faça o login novamente.");
         return;
     }
@@ -110,7 +101,6 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
 
     const dataHoraCompleta = `${dataConsulta}T${horario}:00`;
 
-    // ✨ CORRIGIDO: idPaciente é adicionado dinamicamente
     const dadosConsulta = {
       dataHora: dataHoraCompleta,
       idMedico: parseInt(idMedico),
@@ -127,13 +117,11 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
         await consultaService.criarConsulta(dadosConsulta);
         alert("Consulta agendada com sucesso!");
       }
-
-      if (typeof onAgendamentoRealizado === 'function') onAgendamentoRealizado();
-      if (typeof onClose === 'function') onClose();
-
+      if (onAgendamentoRealizado) onAgendamentoRealizado();
+      if (onClose) onClose();
     } catch (error) {
       console.error("Erro ao salvar consulta:", error);
-      const errorMsg = error.response?.data?.message || error.response?.data?.error || "Erro ao salvar a consulta.";
+      const errorMsg = error.response?.data?.message || error.response?.data || "Erro ao salvar a consulta.";
       setFormError(errorMsg);
     } finally {
       setLoading(false);
@@ -142,10 +130,10 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
   
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
-      if (typeof onClose === 'function') onClose();
+      if (onClose) onClose();
     }
   };
-
+  
   return (
     <div className={styles.modalOverlay} onClick={handleOverlayClick}>
       <div className={styles.modalContent}>
@@ -157,8 +145,8 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
             &times;
           </button>
         </div>
+        
         <form onSubmit={handleSalvarOuEditar} className="mt-3">
-          {/* O JSX do formulário continua o mesmo */}
           <div className="mb-3">
             <label htmlFor="medico" className={`form-label ${styles.formLabel}`}>Médico</label>
             <select id="medico" className={`form-select form-select-lg ${styles.formSelect}`} value={idMedico} onChange={(e) => setIdMedico(e.target.value)} disabled={loadingMedicos} required >
@@ -166,6 +154,7 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
               {medicos.map((med) => (<option key={med.id} value={med.id}>{med.nome} {med.sobrenome || ""}</option>))}
             </select>
           </div>
+
           <div className="row">
             <div className="col-md-6 mb-3">
               <label htmlFor="dataConsulta" className={`form-label ${styles.formLabel}`}>Data</label>
@@ -180,11 +169,14 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
               {horariosDisponiveis.length === 0 && idMedico && dataConsulta && !loadingHorarios && (<small className="text-muted d-block mt-1">Nenhum horário disponível.</small>)}
             </div>
           </div>
+
           <div className="mb-3">
             <label htmlFor="descricao" className={`form-label ${styles.formLabel}`}>Descrição (Opcional)</label>
             <textarea id="descricao" className={`form-control ${styles.formInput}`} rows="3" value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex: Retorno, Check-up anual, Dor de cabeça" />
           </div>
+
           {formError && <p className={styles.errorMessage}>{formError}</p>}
+          
           <div className="d-grid gap-2">
             <button type="submit" className={`btn btn-primary btn-lg ${styles.submitButton}`} disabled={loading || loadingMedicos || loadingHorarios || !idMedico || !dataConsulta || !horario}>
                 {loading ? "Salvando..." : (consultaProp ? "Salvar Alterações" : "Agendar Consulta")}

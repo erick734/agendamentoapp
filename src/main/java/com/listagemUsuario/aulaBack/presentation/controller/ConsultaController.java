@@ -18,8 +18,18 @@ public class ConsultaController {
     private ConsultaService consultaService;
 
     @GetMapping
-    public ResponseEntity<List<ConsultaResponse>> listarConsultas() {
-        return ResponseEntity.ok(consultaService.listarConsultasFormatado());
+    public ResponseEntity<List<ConsultaResponse>> listarTodasConsultas() {
+        return ResponseEntity.ok(consultaService.listarTodasConsultas());
+    }
+
+    @GetMapping("/paciente/{idPaciente}")
+    public ResponseEntity<List<ConsultaResponse>> listarConsultasPorPaciente(@PathVariable Long idPaciente) {
+        return ResponseEntity.ok(consultaService.listarConsultasPorPaciente(idPaciente));
+    }
+
+    @GetMapping("/medico/{idMedico}")
+    public ResponseEntity<List<ConsultaResponse>> listarConsultasPorMedico(@PathVariable Long idMedico) {
+        return ResponseEntity.ok(consultaService.listarConsultasPorMedico(idMedico));
     }
 
     @GetMapping("/{id}")
@@ -54,5 +64,17 @@ public class ConsultaController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @PatchMapping("/{id}/aprovar")
+    public ResponseEntity<Void> aprovarConsulta(@PathVariable Long id) {
+        consultaService.mudarStatusConsulta(id, "APROVADA");
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelarConsulta(@PathVariable Long id) {
+        consultaService.mudarStatusConsulta(id, "CANCELADA");
+        return ResponseEntity.ok().build();
     }
 }

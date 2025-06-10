@@ -1,54 +1,107 @@
+.menuButton {
+  position: fixed;
+  top: 15px;
+  left: 20px;
+  z-index: 1100;
+  background-color: #0b243c;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.menuButton:hover {
+  background-color: #1c4a70;
+}
+
 .sidebar {
   position: fixed;
   top: 0;
   left: 0;
-  width: 60px;
-  background-color: #0b243c;
-  color: #d5d5d5;
+  width: 250px;
   height: 100vh;
-  overflow-x: hidden;
-  transition: width 0.3s ease;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  background-color: #0b243c;
+  color: #e0e0e0;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 1200;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 
-.sidebarExpanded {
-  width: 220px;
+.sidebarOpen {
+  transform: translateX(0);
 }
 
-.sidebarContent {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  padding-top: 20px;
+.sidebarOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1150;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
 }
 
-.sidebarContent img {
-  display: block;
-  margin: 0 auto 20px auto;
+.overlayVisible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sidebarHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #1c4a70;
+}
+
+.sidebarHeader img {
   max-width: 120px;
 }
 
-.sidebarExpanded .sidebarContent {
-  opacity: 1;
+.closeButton {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
 }
 
-.nav-link {
-  padding: 12px;
-  font-size: 16px;
-  color: white;
+.navList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-top: 1rem;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  color: #e0e0e0;
   text-decoration: none;
-  display: block;
-  width: 100%;
-  text-align: center;
-  transition: background-color 0.3s, transform 0.2s;
+  font-size: 1rem;
+  transition: background-color 0.2s ease;
 }
 
-.nav-link:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 5px;
-  transform: scale(1.05);
+.navLink:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navLink i {
+    font-size: 1.2rem;
 }

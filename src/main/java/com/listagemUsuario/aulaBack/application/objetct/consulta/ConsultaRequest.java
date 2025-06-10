@@ -12,6 +12,4 @@ public class ConsultaRequest {
     private String descricao;
     private Long idPaciente;
     private Long idMedico;
-
-    // Getters e setters
 }

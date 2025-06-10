@@ -1,5 +1,7 @@
 package com.listagemUsuario.aulaBack.presentation.controller;
 
+import com.listagemUsuario.aulaBack.application.objetct.alterarDados.AlterarEmailRequest;
+import com.listagemUsuario.aulaBack.application.objetct.alterarDados.AlterarSenhaRequest;
 import com.listagemUsuario.aulaBack.application.objetct.usuario.UsuarioRequest;
 import com.listagemUsuario.aulaBack.application.services.UsuarioService;
 import com.listagemUsuario.aulaBack.application.objetct.usuario.UsuarioResponse;
@@ -8,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/usuario")
@@ -91,6 +94,26 @@ public class UsuarioController {
             return ResponseEntity.ok().body(usuarios);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro ao listar usuários por perfil: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("/alterar-email")
+    public ResponseEntity<String> alterarEmail(Authentication authentication, @RequestBody AlterarEmailRequest request) {
+        try {
+            usuarioService.alterarEmail(authentication.getName(), request);
+            return ResponseEntity.ok("E-mail alterado com sucesso.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PatchMapping("/alterar-senha")
+    public ResponseEntity<String> alterarSenha(Authentication authentication, @RequestBody AlterarSenhaRequest request) {
+        try {
+            usuarioService.alterarSenha(authentication.getName(), request);
+            return ResponseEntity.ok("Senha alterada com sucesso.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

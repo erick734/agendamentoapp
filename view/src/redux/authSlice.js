@@ -1,37 +1,32 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice } from '@reduxjs/toolkit';
+
+const initialState = {
+  user: JSON.parse(localStorage.getItem('authUser')) || null,
+  token: JSON.parse(localStorage.getItem('authToken')) || null,
+};
 
 const authSlice = createSlice({
-  name: "auth",
-  initialState: {
-    token: null,
-    usuario: null,
-    id: null,
-    perfil: null,
-    nome: null,
-  },
+  name: 'auth',
+  initialState,
   reducers: {
     setAuth: (state, action) => {
-      state.token = action.payload.token;
-      state.usuario = action.payload.usuario;
-      state.id = action.payload.id;
-      state.perfil = action.payload.perfil;
-      state.nome = action.payload.nome;
+      const { user, token } = action.payload;
+      state.user = user;
+      state.token = token;
+      localStorage.setItem('authUser', JSON.stringify(user));
+      localStorage.setItem('authToken', JSON.stringify(token));
     },
     logout: (state) => {
+      state.user = null;
       state.token = null;
-      state.usuario = null;
-      state.id = null;
-      state.perfil = null;
-      state.nome = null;
+      localStorage.removeItem('authUser');
+      localStorage.removeItem('authToken');
     },
   },
 });
 
 export const { setAuth, logout } = authSlice.actions;
-export const selectToken = (state) => state.auth.token;
-export const selectUsuario = (state) => state.auth.usuario;
-export const selectPerfil = (state) => state.auth.perfil;
-export const selectNome = (state) => state.auth.nome;
-export const selectId = (state) => state.auth.id;
+export const selectUser = (state) => state.auth.user;
 export const selectIsAuthenticated = (state) => !!state.auth.token;
+export const selectToken = (state) => state.auth.token; 
 export default authSlice.reducer;

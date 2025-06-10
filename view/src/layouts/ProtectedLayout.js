@@ -6,18 +6,21 @@ import SideBar from '../components/SideBar';
 import styles from './ProtectedLayout.module.css';
 
 export default function ProtectedLayout() {
-  const [expanded, setExpanded] = useState(false);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
   return (
     <div className={styles.layoutContainer}>
-      <SideBar expanded={expanded} setExpanded={setExpanded} />
-      <main className={`${styles.mainContent} ${expanded ? styles.mainContentExpanded : ''}`}>
+      
+      <SideBar expanded={isSidebarExpanded} setExpanded={setIsSidebarExpanded} />
+      
+      <main className={styles.mainContent}>
         <Header />
         <div className={styles.contentOutlet}>
           <Outlet />
         </div>
         <Footer />
       </main>
+
     </div>
   );
 }
