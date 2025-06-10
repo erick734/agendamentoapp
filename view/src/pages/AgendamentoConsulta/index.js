@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
+import { selectUser } from "../../redux/authSlice";
 import { consultaService } from "../../service/consultaService";
 import { usuarioService } from "../../service/usuarioService";
 import styles from "./index.module.css";
@@ -7,18 +8,17 @@ import styles from "./index.module.css";
 const horariosFixos = [
   "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
   "11:00", "11:30", "14:00", "14:30", "15:00", "15:30",
-  "16:00", "16:30", "17:00", "17:30", "18:00"
+  "16:00", "16:30", "17:00", "17:30"
 ];
 
 export default function AgendamentoConsulta({ consulta: consultaProp, onClose, onAgendamentoRealizado }) {
   
-  const usuarioLogado = useSelector(state => state.auth.user);
+  const usuarioLogado = useSelector(selectUser);
 
   const [dataConsulta, setDataConsulta] = useState(new Date().toISOString().split('T')[0]);
   const [horario, setHorario] = useState("");
   const [idMedico, setIdMedico] = useState("");
   const [descricao, setDescricao] = useState("");
-  
   const [medicos, setMedicos] = useState([]);
   const [horariosDisponiveis, setHorariosDisponiveis] = useState(horariosFixos);
   const [loading, setLoading] = useState(false);
@@ -56,13 +56,16 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
     setLoadingHorarios(true);
     setFormError("");
     try {
+      // ✨ CORRIGIDO: A função do service agora retorna os dados diretamente (o array)
       const consultasDoMedico = await consultaService.getConsultasPorMedico(medicoId);
+      
       const horariosOcupadosNaData = consultasDoMedico
         .filter(c => c.dataHora && c.dataHora.startsWith(data))
         .map(c => c.dataHora.split('T')[1].substring(0, 5));
 
       const disponiveis = horariosFixos.filter(h => !horariosOcupadosNaData.includes(h));
       setHorariosDisponiveis(disponiveis);
+
       if (disponiveis.length === 0) {
         setFormError("Nenhum horário disponível para este médico nesta data.");
       }
@@ -88,26 +91,21 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
   const handleSalvarOuEditar = async (e) => {
     e.preventDefault();
     setFormError("");
-
     if (!usuarioLogado?.id) {
         setFormError("Erro: Usuário não identificado. Por favor, faça o login novamente.");
         return;
     }
-
     if (!dataConsulta || !horario || !idMedico) {
         setFormError("Por favor, preencha a data, horário e selecione um médico.");
         return;
     }
-
     const dataHoraCompleta = `${dataConsulta}T${horario}:00`;
-
     const dadosConsulta = {
       dataHora: dataHoraCompleta,
       idMedico: parseInt(idMedico),
       idPaciente: usuarioLogado.id, 
       descricao: descricao,
     };
-
     setLoading(true);
     try {
       if (consultaProp?.id) {
@@ -141,44 +139,37 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
           <h2 className={styles.modalTitle}>
             {consultaProp ? "Editar Consulta" : "Agendar Consulta"}
           </h2>
-          <button onClick={onClose} className={styles.closeButton} aria-label="Fechar modal">
-            &times;
-          </button>
+          <button onClick={onClose} className={styles.closeButton} aria-label="Fechar modal">&times;</button>
         </div>
-        
         <form onSubmit={handleSalvarOuEditar} className="mt-3">
           <div className="mb-3">
-            <label htmlFor="medico" className={`form-label ${styles.formLabel}`}>Médico</label>
-            <select id="medico" className={`form-select form-select-lg ${styles.formSelect}`} value={idMedico} onChange={(e) => setIdMedico(e.target.value)} disabled={loadingMedicos} required >
+            <label htmlFor="medico" className="form-label fw-bold">Médico</label>
+            <select id="medico" className="form-select form-select-lg" value={idMedico} onChange={(e) => setIdMedico(e.target.value)} disabled={loadingMedicos} required>
               <option value="">{loadingMedicos ? "Carregando médicos..." : "Selecione um médico"}</option>
               {medicos.map((med) => (<option key={med.id} value={med.id}>{med.nome} {med.sobrenome || ""}</option>))}
             </select>
           </div>
-
           <div className="row">
             <div className="col-md-6 mb-3">
-              <label htmlFor="dataConsulta" className={`form-label ${styles.formLabel}`}>Data</label>
-              <input type="date" id="dataConsulta" className={`form-control form-control-lg ${styles.formInput}`} value={dataConsulta} onChange={(e) => setDataConsulta(e.target.value)} min={new Date().toISOString().split('T')[0]} required disabled={!idMedico} />
+              <label htmlFor="dataConsulta" className="form-label fw-bold">Data</label>
+              <input type="date" id="dataConsulta" className="form-control form-control-lg" value={dataConsulta} onChange={(e) => setDataConsulta(e.target.value)} min={new Date().toISOString().split('T')[0]} required disabled={!idMedico} />
             </div>
             <div className="col-md-6 mb-3">
-              <label htmlFor="horario" className={`form-label ${styles.formLabel}`}>Horário</label>
-              <select id="horario" className={`form-select form-select-lg ${styles.formSelect}`} value={horario} onChange={(e) => setHorario(e.target.value)} disabled={!idMedico || !dataConsulta || loadingHorarios || horariosDisponiveis.length === 0} required>
+              <label htmlFor="horario" className="form-label fw-bold">Horário</label>
+              <select id="horario" className="form-select form-select-lg" value={horario} onChange={(e) => setHorario(e.target.value)} disabled={!idMedico || !dataConsulta || loadingHorarios || horariosDisponiveis.length === 0} required>
                 <option value="">{loadingHorarios ? "Verificando..." : "Selecione um horário"}</option>
                 {horariosDisponiveis.map(h => (<option key={h} value={h}>{h}</option>))}
               </select>
-              {horariosDisponiveis.length === 0 && idMedico && dataConsulta && !loadingHorarios && (<small className="text-muted d-block mt-1">Nenhum horário disponível.</small>)}
+              {horariosDisponiveis.length === 0 && idMedico && dataConsulta && !loadingHorarios && (<small className="text-danger d-block mt-1">{formError || "Nenhum horário disponível."}</small>)}
             </div>
           </div>
-
           <div className="mb-3">
-            <label htmlFor="descricao" className={`form-label ${styles.formLabel}`}>Descrição (Opcional)</label>
-            <textarea id="descricao" className={`form-control ${styles.formInput}`} rows="3" value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex: Retorno, Check-up anual, Dor de cabeça" />
+            <label htmlFor="descricao" className="form-label fw-bold">Descrição (Opcional)</label>
+            <textarea id="descricao" className="form-control" rows="3" value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex: Retorno, Check-up anual..." />
           </div>
-
-          {formError && <p className={styles.errorMessage}>{formError}</p>}
-          
-          <div className="d-grid gap-2">
-            <button type="submit" className={`btn btn-primary btn-lg ${styles.submitButton}`} disabled={loading || loadingMedicos || loadingHorarios || !idMedico || !dataConsulta || !horario}>
+          {formError && !horariosDisponiveis.length && <p className="text-danger text-center">{formError}</p>}
+          <div className="d-grid gap-2 mt-4">
+            <button type="submit" className="btn btn-primary btn-lg" disabled={loading || loadingMedicos || loadingHorarios || !idMedico || !dataConsulta || !horario}>
                 {loading ? "Salvando..." : (consultaProp ? "Salvar Alterações" : "Agendar Consulta")}
             </button>
             <button type="button" className="btn btn-outline-secondary" onClick={onClose} disabled={loading}>

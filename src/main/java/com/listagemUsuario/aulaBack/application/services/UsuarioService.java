@@ -9,7 +9,9 @@ import com.listagemUsuario.aulaBack.domain.repository.UsuarioRepository;
 import com.listagemUsuario.aulaBack.domain.valueObjetcs.Email;
 import com.listagemUsuario.aulaBack.domain.valueObjetcs.Telefone;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -24,16 +26,17 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     public UsuarioResponse usuarioLogado() {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
-        var usuarioLogado = usuarioRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new RuntimeException("Erro ao encontrar o usuário logado."));
-        return toResponse(usuarioLogado);
+        return toResponse(getUsuarioLogado());
     }
 
     public UsuarioResponse buscarPorId(Long id) {
-        var usuario = usuarioRepository.findById(id)
+        Usuario usuarioLogado = getUsuarioLogado();
+        if (!usuarioLogado.getId().equals(id) && !usuarioLogado.getPerfil().equalsIgnoreCase("A")) {
+            throw new AccessDeniedException("Você não tem permissão para ver este perfil.");
+        }
+        return usuarioRepository.findById(id)
+                .map(this::toResponse)
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado com o ID: " + id));
-        return toResponse(usuario);
     }
 
     public Usuario salvar(UsuarioRequest entrada) {
@@ -46,37 +49,40 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> listarTodos() {
-        var usuarios = usuarioRepository.findAll();
-        return usuarios.stream()
+        Usuario usuarioLogado = getUsuarioLogado();
+        if (!usuarioLogado.getPerfil().equalsIgnoreCase("A")) {
+            throw new AccessDeniedException("Você não tem permissão para listar todos os usuários.");
+        }
+        return usuarioRepository.findAll().stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
     }
 
     public UsuarioResponse usuarioEditado(Long id, UsuarioRequest entrada) {
-        var usuarioEncontrado = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Erro: Usuário com ID " + id + " não encontrado para atualização."));
-
-        var usuario = usuarioEncontrado;
-        usuario.setNome(entrada.nome());
-        usuario.setSobrenome(entrada.sobrenome());
-        usuario.setTelefone(new Telefone(entrada.telefone()));
-        usuario.setCep(entrada.cep());
-        usuario.setLocalidade(entrada.localidade());
-        usuario.setUf(entrada.uf());
-
-        if (entrada.email() != null && !entrada.email().isEmpty()) {
-            usuario.setEmail(new Email(entrada.email()));
+        Usuario usuarioLogado = getUsuarioLogado();
+        if (!usuarioLogado.getId().equals(id) && !usuarioLogado.getPerfil().equalsIgnoreCase("A")) {
+            throw new AccessDeniedException("Você não tem permissão para editar este perfil.");
         }
 
-        if (entrada.senha() != null && !entrada.senha().isEmpty()) {
-            usuario.setSenha(entrada.senha());
-        }
+        Usuario usuarioParaEditar = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Erro: Usuário com ID " + id + " não encontrado."));
 
-        usuarioRepository.save(usuario);
-        return toResponse(usuario);
+        usuarioParaEditar.setNome(entrada.nome());
+        usuarioParaEditar.setSobrenome(entrada.sobrenome());
+        usuarioParaEditar.setTelefone(new Telefone(entrada.telefone()));
+        usuarioParaEditar.setCep(entrada.cep());
+        usuarioParaEditar.setLocalidade(entrada.localidade());
+        usuarioParaEditar.setUf(entrada.uf());
+
+        usuarioRepository.save(usuarioParaEditar);
+        return toResponse(usuarioParaEditar);
     }
 
     public void deletar(Long id) {
+        Usuario usuarioLogado = getUsuarioLogado();
+        if (!usuarioLogado.getId().equals(id) && !usuarioLogado.getPerfil().equalsIgnoreCase("A")) {
+            throw new AccessDeniedException("Você não tem permissão para deletar este perfil.");
+        }
         if (!usuarioRepository.existsById(id)) {
             throw new RuntimeException("Erro ao deletar: Usuário com ID " + id + " não encontrado.");
         }
@@ -84,10 +90,43 @@ public class UsuarioService {
     }
 
     public List<UsuarioResponse> listarPorPerfil(String perfil) {
-        var usuarios = usuarioRepository.findByPerfil(perfil);
-        return usuarios.stream()
+        return usuarioRepository.findByPerfil(perfil).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public void alterarEmail(String emailUsuarioLogado, AlterarEmailRequest request) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuarioLogado)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
+        if (!usuario.getSenha().equals(request.senhaAtual())) {
+            throw new BadCredentialsException("Senha atual incorreta.");
+        }
+        if (usuarioRepository.findByEmail(request.novoEmail()).isPresent()) {
+            throw new IllegalStateException("O novo e-mail já está em uso.");
+        }
+        usuario.setEmail(new Email(request.novoEmail()));
+        usuario.setUsuario(request.novoEmail());
+        usuarioRepository.save(usuario);
+    }
+
+    public void alterarSenha(String emailUsuarioLogado, AlterarSenhaRequest request) {
+        Usuario usuario = usuarioRepository.findByEmail(emailUsuarioLogado)
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
+        if (!usuario.getSenha().equals(request.senhaAtual())) {
+            throw new BadCredentialsException("Senha atual incorreta.");
+        }
+        usuario.setSenha(request.novaSenha());
+        usuarioRepository.save(usuario);
+    }
+
+    // --- MÉTODOS PRIVADOS ---
+    private Usuario getUsuarioLogado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new AccessDeniedException("Usuário não autenticado.");
+        }
+        return usuarioRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuário da autenticação não encontrado."));
     }
 
     private UsuarioResponse toResponse(Usuario usuario) {
@@ -104,34 +143,4 @@ public class UsuarioService {
                 usuario.getEmail() != null ? usuario.getEmail().getEmail() : null
         );
     }
-
-    public void alterarEmail(String emailUsuarioLogado, AlterarEmailRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(emailUsuarioLogado)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
-
-        if (!usuario.getSenha().equals(request.senhaAtual())) {
-            throw new BadCredentialsException("Senha atual incorreta.");
-        }
-
-        if (usuarioRepository.findByEmail(request.novoEmail()).isPresent()) {
-            throw new IllegalStateException("O novo e-mail já está em uso.");
-        }
-
-        usuario.setEmail(new Email(request.novoEmail()));
-        usuario.setUsuario(request.novoEmail());
-        usuarioRepository.save(usuario);
-    }
-
-    public void alterarSenha(String emailUsuarioLogado, AlterarSenhaRequest request) {
-        Usuario usuario = usuarioRepository.findByEmail(emailUsuarioLogado)
-                .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
-
-        if (!usuario.getSenha().equals(request.senhaAtual())) {
-            throw new BadCredentialsException("Senha atual incorreta.");
-        }
-
-        usuario.setSenha(request.novaSenha());
-        usuarioRepository.save(usuario);
-    }
-
 }

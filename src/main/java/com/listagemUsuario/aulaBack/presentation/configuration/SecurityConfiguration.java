@@ -31,14 +31,20 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Rotas Públicas
                         .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**", "/swagger-resources/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuario").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/consultas").hasAnyRole("A", "P")
-                        .requestMatchers(HttpMethod.PUT, "/consultas/**").hasAnyRole("A", "P")
+                        // Regras para CONSULTAS
                         .requestMatchers(HttpMethod.DELETE, "/consultas/**").hasRole("A")
                         .requestMatchers(HttpMethod.PATCH, "/consultas/**").hasAnyRole("A", "M")
-                        .requestMatchers("/consultas/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/consultas/**").hasAnyRole("A", "P")
+                        .requestMatchers(HttpMethod.POST, "/consultas").hasAnyRole("A", "P")
+                        .requestMatchers(HttpMethod.GET, "/consultas/**").authenticated()
+
+                        // Regra para USUARIO
+                        .requestMatchers("/usuario/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

@@ -18,13 +18,8 @@ public class ConsultaController {
     private ConsultaService consultaService;
 
     @GetMapping
-    public ResponseEntity<List<ConsultaResponse>> listarTodasConsultas() {
-        return ResponseEntity.ok(consultaService.listarTodasConsultas());
-    }
-
-    @GetMapping("/paciente/{idPaciente}")
-    public ResponseEntity<List<ConsultaResponse>> listarConsultasPorPaciente(@PathVariable Long idPaciente) {
-        return ResponseEntity.ok(consultaService.listarConsultasPorPaciente(idPaciente));
+    public ResponseEntity<List<ConsultaResponse>> listarConsultas() {
+        return ResponseEntity.ok(consultaService.listarConsultasParaUsuarioLogado());
     }
 
     @GetMapping("/medico/{idMedico}")
@@ -34,36 +29,23 @@ public class ConsultaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ConsultaResponse> buscarConsultaPorId(@PathVariable Long id) {
-        ConsultaResponse response = consultaService.buscarPorIdFormatado(id);
-        if (response != null) {
-            return ResponseEntity.ok(response);
-        }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(consultaService.buscarPorIdFormatado(id));
     }
 
     @PostMapping
     public ResponseEntity<Consulta> criarConsulta(@RequestBody ConsultaRequest request) {
-        Consulta novaConsulta = consultaService.salvarConsulta(request);
-        return ResponseEntity.status(201).body(novaConsulta);
+        return ResponseEntity.status(201).body(consultaService.salvarConsulta(request));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Consulta> atualizarConsulta(@PathVariable Long id, @RequestBody ConsultaRequest request) {
-        Consulta consultaAtualizada = consultaService.atualizarConsulta(id, request);
-        if (consultaAtualizada != null) {
-            return ResponseEntity.ok(consultaAtualizada);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(consultaService.atualizarConsulta(id, request));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletarConsulta(@PathVariable Long id) {
-        boolean deletado = consultaService.deletarConsulta(id);
-        if (deletado) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        consultaService.deletarConsulta(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/aprovar")

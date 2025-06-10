@@ -16,7 +16,6 @@ public class AuthService {
     private TokenService tokenService;
 
     public LoginResponse login(LoginRequest request) {
-        // Usa o método com a query corrigida para buscar por e-mail e senha em texto puro
         var usuario = usuarioRepository.findByEmailAndSenha(request.usuario(), request.senha())
                 .orElseThrow(() -> new RuntimeException("E-mail ou senha inválidos."));
 

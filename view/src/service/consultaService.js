@@ -1,7 +1,12 @@
 import apiClient from "./api";
 
-const getConsultaById = async (id) => {
-  const response = await apiClient.get(`/consultas/${id}`);
+const getMinhasConsultas = async () => {
+  const response = await apiClient.get("/consultas");
+  return response.data;
+};
+
+const getConsultasPorMedico = async (medicoId) => {
+  const response = await apiClient.get(`/consultas/medico/${medicoId}`);
   return response.data;
 };
 
@@ -30,23 +35,12 @@ const cancelarConsulta = async (id) => {
   return response.data;
 }
 
-const getConsultasPorMedico = async (medicoId) => {
-    try {
-        const response = await apiClient.get(`/consultas/medico/${medicoId}`);
-        return response.data;
-    } catch (error) {
-        console.error("Erro ao buscar consultas do médico:", error);
-        throw error;
-    }
-}
-
-
 export const consultaService = {
-  getConsultaById,
+  getMinhasConsultas,
+  getConsultasPorMedico,
   criarConsulta,
   atualizarConsulta,
   deletarConsulta,
   aprovarConsulta,
   cancelarConsulta,
-  getConsultasPorMedico,
 };

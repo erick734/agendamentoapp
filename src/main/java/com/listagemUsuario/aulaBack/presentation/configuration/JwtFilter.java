@@ -30,17 +30,12 @@ public class JwtFilter extends OncePerRequestFilter {
             DecodedJWT jwt = tokenService.validarToken(token);
 
             if (jwt != null) {
-                // ✨ LENDO O PERFIL DO TOKEN
                 String perfil = jwt.getClaim("perfil").asString();
-
-                // ✨ CRIANDO A PERMISSÃO QUE O SPRING SECURITY ENTENDE (Ex: "ROLE_A")
                 List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + perfil.toUpperCase()));
-
-                // Criando a autenticação com as permissões corretas
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         jwt.getSubject(),
                         null,
-                        authorities // ✨ PASSANDO AS PERMISSÃO REAL
+                        authorities
                 );
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
