@@ -1,207 +1,164 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import BuscaEndereco from "../BuscaEndereco";
 import { useNavigate } from "react-router-dom";
 import { usuarioService } from "../../service/usuarioService";
+import { empresaService } from "../../service/empresaService";
+import styles from './index.module.css';
 
 export default function Cadastro() {
-  const [usuario, setUsuario] = useState("");
-  const [senha, setSenha] = useState("");
-  const [perfil, setPerfil] = useState("p");
-  const [endereco, setEndereco] = useState({
-    cep: "",
-    localidade: "",
-    uf: "",
-  });
-  const [nome, setNome] = useState("");
-  const [sobrenome, setSobrenome] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [erroTelefone, setErroTelefone] = useState("");
-  const [carregando, setCarregando] = useState(false);
+    const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [senha, setSenha] = useState("");
+    const [nome, setNome] = useState("");
+    const [sobrenome, setSobrenome] = useState("");
+    const [telefone, setTelefone] = useState("");
+    const [perfil, setPerfil] = useState("p");
+    const [endereco, setEndereco] = useState({ cep: "", localidade: "", uf: "" });
+    const [empresas, setEmpresas] = useState([]);
+    const [idEmpresa, setIdEmpresa] = useState("");
+    const [carregando, setCarregando] = useState(false);
+    const [erroGeral, setErroGeral] = useState("");
+    const [carregandoEmpresas, setCarregandoEmpresas] = useState(false);
 
-  const navigate = useNavigate();
+    const fetchEmpresas = useCallback(() => {
+        if (perfil === 'm') {
+            setCarregandoEmpresas(true);
+            empresaService.getEmpresas()
+                .then(data => setEmpresas(data || []))
+                .catch(err => setErroGeral("Não foi possível carregar as clínicas."))
+                .finally(() => setCarregandoEmpresas(false));
+        }
+    }, [perfil]);
 
-  const validarTelefone = (numero) => {
-    const numeroLimpo = numero.replace(/\D/g, "");
-
-    if (numeroLimpo.length < 10 || numeroLimpo.length > 11) {
-      setErroTelefone("Número inválido. Inclua o DDD.");
-    } else if (numeroLimpo.length === 11 && numeroLimpo[2] !== "9") {
-      setErroTelefone("Celular deve ter o nono dígito (ex: 9XXXX...).");
-    } else {
-      setErroTelefone("");
-    }
-
-    setTelefone(numero);
-  };
-
-  async function cadastrarUsuario(e) {
-    e.preventDefault();
-    if (erroTelefone) {
-      alert("Por favor, corrija o erro no telefone.");
-      return;
-    }
-    setCarregando(true);
-
-    const payload = {
-      email: usuario,
-      senha: senha,
-      perfil: perfil,
-      nome: nome,
-      sobrenome: sobrenome,
-      telefone: telefone.replace(/\D/g, ""),
-      cep: endereco.cep || "",
-      localidade: endereco.localidade || "",
-      uf: endereco.uf || "",
+    useEffect(() => {
+        fetchEmpresas();
+    }, [fetchEmpresas]);
+    
+    const handleTelefoneChange = (e) => {
+        const valor = e.target.value.replace(/\D/g, "");
+        const mascarado = valor
+            .replace(/^(\d{2})(\d)/, '($1) $2')
+            .replace(/(\d{5})(\d)/, '$1-$2')
+            .replace(/(\d{4})-(\d)(\d{4})/, '$1$2-$3')
+            .substring(0, 15);
+        setTelefone(mascarado);
     };
 
-    try {
-      await usuarioService.cadastrar(payload);
-      alert("Usuário cadastrado com sucesso!");
-      navigate("/login");
-    } catch (error) {
-      console.error(
-        "Erro ao cadastrar usuário:",
-        error.response ? error.response.data : error.message
-      );
-      const mensagemErro = error.response?.data?.message || error.response?.data?.error || "Erro ao cadastrar o usuário. Verifique os dados ou tente novamente.";
-      alert(mensagemErro);
-    } finally {
-      setCarregando(false);
-    }
-  }
+    const cadastrarUsuario = async (e) => {
+        e.preventDefault();
+        setErroGeral("");
+        if (perfil === 'm' && !idEmpresa) {
+            alert("Por favor, selecione uma empresa para o perfil de médico.");
+            return;
+        }
+        setCarregando(true);
+        const payload = {
+            usuario: email,
+            email,
+            senha,
+            perfil,
+            nome,
+            sobrenome,
+            telefone: telefone.replace(/\D/g, ""),
+            cep: endereco.cep.replace(/\D/g, ""),
+            localidade: endereco.localidade,
+            uf: endereco.uf,
+            idEmpresa: perfil === 'm' ? idEmpresa : null,
+        };
+        try {
+            await usuarioService.cadastrar(payload);
+            alert("Usuário cadastrado com sucesso!");
+            navigate("/login");
+        } catch (error) {
+            setErroGeral(error.response?.data || "Erro ao cadastrar.");
+        } finally {
+            setCarregando(false);
+        }
+    };
 
-  return (
-    <div className="container py-4 d-flex justify-content-center">
-      <div className="card shadow-lg p-4 w-100" style={{ maxWidth: "600px" }}>
-        <h2 className="text-center fw-bold">Cadastro de Usuário</h2>
-        <p className="text-muted text-center">Preencha as informações abaixo.</p>
+    return (
+        <div className={styles.pageContainer}>
+            <div className={`card ${styles.formCard}`}>
+                <h2 className={styles.formTitle}>Crie sua Conta</h2>
+                <p className={styles.formSubtitle}>É rápido e fácil.</p>
 
-        <form onSubmit={cadastrarUsuario} className="mt-3">
-          <div className="mb-3">
-            <label className="form-label fw-bold">E-mail (será seu login de acesso)</label>
-            <input
-              type="email"
-              className="form-control form-control-lg"
-              value={usuario}
-              onChange={(e) => setUsuario(e.target.value)}
-              required
-              disabled={carregando}
-            />
-          </div>
+                <form onSubmit={cadastrarUsuario} className="mt-4">
+                    <div className="row g-3">
+                        <div className="col-12 col-md-6">
+                            <label className="form-label fw-bold">E-mail (será seu login)</label>
+                            <input type="email" list="email-sugestoes" className="form-control" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" disabled={carregando}/>
+                            <datalist id="email-sugestoes">
+                                <option value={email.split('@')[0] + "@gmail.com"} />
+                                <option value={email.split('@')[0] + "@hotmail.com"} />
+                                <option value={email.split('@')[0] + "@outlook.com"} />
+                            </datalist>
+                        </div>
+                        <div className="col-12 col-md-6">
+                            <label className="form-label fw-bold">Senha</label>
+                            <input type="password" className="form-control" value={senha} onChange={(e) => setSenha(e.target.value)} required minLength={6} autoComplete="new-password" disabled={carregando}/>
+                        </div>
+                        <div className="col-md-6">
+                            <label className="form-label">Nome</label>
+                            <input type="text" className="form-control" value={nome} onChange={(e) => setNome(e.target.value)} required disabled={carregando}/>
+                        </div>
+                        <div className="col-md-6">
+                            <label className="form-label">Sobrenome</label>
+                            <input type="text" className="form-control" value={sobrenome} onChange={(e) => setSobrenome(e.target.value)} required disabled={carregando}/>
+                        </div>
+                        <div className="col-md-6">
+                            <label className="form-label">Telefone</label>
+                            <input type="tel" className="form-control" placeholder="(XX) XXXXX-XXXX" value={telefone} onChange={handleTelefoneChange} required disabled={carregando}/>
+                        </div>
+                        <div className="col-md-6">
+                            <label className="form-label">Eu sou</label>
+                            <select className="form-select" value={perfil} onChange={(e) => setPerfil(e.target.value)} required disabled={carregando}>
+                                <option value="p">Paciente</option>
+                                <option value="m">Médico</option>
+                            </select>
+                        </div>
+                    </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">Senha</label>
-            <input
-              type="password"
-              className="form-control form-control-lg"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              required
-              minLength={6}
-              disabled={carregando}
-            />
-          </div>
+                    {perfil === 'm' && (
+                        <div className="mt-3">
+                            <label className="form-label fw-bold">Clínica/Empresa</label>
+                            <select className="form-select" value={idEmpresa} onChange={(e) => setIdEmpresa(e.target.value)} required={perfil === 'm'} disabled={carregando || carregandoEmpresas}>
+                                <option value="">{carregandoEmpresas ? "Carregando..." : "Selecione a clínica"}</option>
+                                {empresas.map(empresa => (<option key={empresa.id} value={empresa.id}>{empresa.nome}</option>))}
+                            </select>
+                        </div>
+                    )}
+                    
+                    <div className="mt-3">
+                        <BuscaEndereco setEndereco={setEndereco} endereco={endereco} disabled={carregando} />
+                    </div>
+                    
+                    <div className="row g-3 mt-1">
+                        <div className="col-md-4">
+                            <label className="form-label">CEP</label>
+                            <input type="text" className="form-control" value={endereco.cep || ""} readOnly disabled />
+                        </div>
+                        <div className="col-md-5">
+                            <label className="form-label">Cidade</label>
+                            <input type="text" className="form-control" value={endereco.localidade || ""} readOnly disabled />
+                        </div>
+                        <div className="col-md-3">
+                            <label className="form-label">UF</label>
+                            <input type="text" className="form-control" value={endereco.uf || ""} readOnly disabled />
+                        </div>
+                    </div>
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">Nome</label>
-            <input
-              type="text"
-              className="form-control form-control-lg"
-              value={nome}
-              onChange={(e) => setNome(e.target.value)}
-              required
-              disabled={carregando}
-            />
-          </div>
+                    {erroGeral && (<div className="alert alert-danger mt-3 text-center" role="alert">{erroGeral}</div>)}
 
-          <div className="mb-3">
-            <label className="form-label fw-bold">Sobrenome</label>
-            <input
-              type="text"
-              className="form-control form-control-lg"
-              value={sobrenome}
-              onChange={(e) => setSobrenome(e.target.value)}
-              required
-              disabled={carregando}
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label fw-bold">Telefone</label>
-            <input
-              type="tel"
-              className={`form-control form-control-lg ${erroTelefone ? "is-invalid" : ""}`}
-              placeholder="Ex: (XX) 9XXXX-XXXX"
-              value={telefone}
-              onChange={(e) => validarTelefone(e.target.value)}
-              required
-              disabled={carregando}
-            />
-            {erroTelefone && <div className="invalid-feedback">{erroTelefone}</div>}
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label fw-bold">Perfil</label>
-            <select
-              className="form-control form-control-lg"
-              value={perfil}
-              onChange={(e) => setPerfil(e.target.value)}
-              required
-              disabled={carregando}
-            >
-              <option value="p">Paciente</option>
-              <option value="m">Médico</option>
-            </select>
-          </div>
-
-          <BuscaEndereco setEndereco={setEndereco} disabled={carregando} />
-
-          <div className="mb-3">
-            <label className="form-label fw-bold">CEP</label>
-            <input
-              type="text"
-              className="form-control form-control-lg"
-              value={endereco.cep || ""}
-              onChange={(e) => setEndereco({ ...endereco, cep: e.target.value })}
-              disabled
-            />
-          </div>
-          <div className="row">
-            <div className="col-md-8 mb-3">
-              <label className="form-label fw-bold">Localidade</label>
-              <input
-                type="text"
-                className="form-control form-control-lg"
-                value={endereco.localidade || ""}
-                onChange={(e) => setEndereco({ ...endereco, localidade: e.target.value })}
-                disabled
-              />
+                    <div className="d-grid mt-4 gap-2">
+                        <button type="submit" className="btn btn-primary btn-lg" disabled={carregando || (perfil === 'm' && !idEmpresa)}>
+                            {carregando ? "Finalizando..." : "Finalizar Cadastro"}
+                        </button>
+                        <button type="button" className="btn btn-outline-secondary" onClick={() => navigate("/login")}>
+                            Já tenho uma conta
+                        </button>
+                    </div>
+                </form>
             </div>
-            <div className="col-md-4 mb-3">
-              <label className="form-label fw-bold">UF</label>
-              <input
-                type="text"
-                className="form-control form-control-lg"
-                value={endereco.uf || ""}
-                onChange={(e) => setEndereco({ ...endereco, uf: e.target.value })}
-                disabled
-              />
-            </div>
-          </div>
-          <button type="submit" className="btn btn-primary btn-lg w-100 mt-3" disabled={carregando}>
-            {carregando ? "Cadastrando..." : "Cadastrar"}
-          </button>
-
-          <button
-            type="button"
-            className="btn btn-outline-secondary btn-lg w-100 mt-2"
-            onClick={() => navigate("/login")}
-            disabled={carregando}
-          >
-            Voltar
-          </button>
-        </form>
-      </div>
-    </div>
-  );
+        </div>
+    );
 }

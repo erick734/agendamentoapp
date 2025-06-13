@@ -1,9 +1,8 @@
 .pageCard {
   background-color: white;
   border-radius: 12px;
-  border: none;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  padding: 2rem 2.5rem;
+  padding: 2rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.07);
 }
 
 .pageHeader {
@@ -16,7 +15,6 @@
 }
 
 .pageTitle {
-  margin: 0;
   font-size: 1.75rem;
   font-weight: 600;
 }
@@ -27,58 +25,97 @@
 }
 
 .consultaItem {
-  padding: 1.5rem;
-  margin-bottom: 1rem;
-  border-radius: 8px;
   border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  overflow: hidden;
   transition: box-shadow 0.2s ease-in-out;
 }
 
 .consultaItem:hover {
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
 }
 
-.consultaDetails {
+.itemHeader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  background-color: #fff;
 }
 
-.info p {
-  margin-bottom: 0.5rem;
+.itemHeader:hover {
+  background-color: #f8f9fa;
+}
+
+.headerInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.headerInfo p {
+  margin: 0;
+  font-size: 0.95rem;
   color: #495057;
 }
 
-.info p:last-child {
-  margin-bottom: 0;
+.toggleIcon {
+  font-size: 1.2rem;
+  transition: transform 0.3s ease;
+  margin-left: 1rem;
 }
 
-.statusBadge {
-  font-size: 0.8rem;
+.toggleIcon.open {
+  transform: rotate(180deg);
+}
+
+.itemBody {
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+  padding: 0 1.5rem;
+}
+
+.itemBody.open {
+  max-height: 250px;
+  padding: 1.5rem;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1.5rem;
+  align-items: center;
+}
+
+.detailsGrid strong {
+  color: #343a40;
   font-weight: 600;
-  padding: 0.5em 0.9em;
-  border-radius: 50rem;
-  text-transform: uppercase;
-}
-
-.statusAguardando {
-  color: #664d03;
-  background-color: #fff3cd;
-}
-
-.statusAprovada {
-  color: #0f5132;
-  background-color: #d1e7dd;
-}
-
-.statusCancelada, .statusRejeitada {
-  color: #58151c;
-  background-color: #f8d7da;
 }
 
 .actionsContainer {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #f1f3f5;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #dee2e6;
   text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
+
+.statusBadge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.4em 0.8em;
+  border-radius: 50rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.statusAguardando { color: #664d03; background-color: #fff3cd; }
+.statusAprovada { color: #0f5132; background-color: #d1e7dd; }
+.statusCancelada { color: #58151c; background-color: #f8d7da; }

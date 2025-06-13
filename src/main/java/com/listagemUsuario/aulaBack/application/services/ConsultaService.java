@@ -35,7 +35,9 @@ public class ConsultaService {
     }
 
     public ConsultaResponse buscarPorIdFormatado(Long id) {
-        return consultaRepository.findById(id).map(this::convertToResponseIndividual).orElse(null);
+        return consultaRepository.findById(id)
+                .map(this::convertToResponseIndividual)
+                .orElseThrow(() -> new RuntimeException("Consulta não encontrada com o ID: " + id));
     }
 
     public Consulta criarConsulta(ConsultaRequest request) {
@@ -49,7 +51,9 @@ public class ConsultaService {
     }
 
     public Consulta atualizarConsulta(Long id, ConsultaRequest request) {
-        Consulta existente = consultaRepository.findById(id).orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
+        Consulta existente = consultaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Consulta não encontrada com o ID: " + id));
+
         existente.setDataHora(request.getDataHora());
         existente.setDescricao(request.getDescricao());
         existente.setIdMedico(request.getIdMedico());
@@ -59,14 +63,14 @@ public class ConsultaService {
 
     public void deletarConsulta(Long id) {
         if (!consultaRepository.existsById(id)) {
-            throw new RuntimeException("Consulta não encontrada para deleção");
+            throw new RuntimeException("Consulta não encontrada para deleção com o ID: " + id);
         }
         consultaRepository.deleteById(id);
     }
 
     public Consulta aprovarConsulta(Long id) {
         Consulta consulta = consultaRepository.findById(id).orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
-        consulta.setStatus("APROVada");
+        consulta.setStatus("APROVADA");
         return consultaRepository.save(consulta);
     }
 
@@ -78,11 +82,14 @@ public class ConsultaService {
 
     private List<ConsultaResponse> formatarListaDeConsultas(List<Consulta> consultas) {
         if (consultas.isEmpty()) return Collections.emptyList();
+
         Set<Long> idsUsuarios = consultas.stream()
                 .flatMap(c -> Stream.of(c.getIdPaciente(), c.getIdMedico()))
                 .filter(Objects::nonNull).collect(Collectors.toSet());
+
         Map<Long, Usuario> mapaUsuarios = usuarioRepository.findAllById(idsUsuarios).stream()
                 .collect(Collectors.toMap(Usuario::getId, Function.identity()));
+
         return consultas.stream()
                 .map(consulta -> convertToResponseComNomes(consulta, mapaUsuarios))
                 .collect(Collectors.toList());
@@ -94,11 +101,13 @@ public class ConsultaService {
         response.setDataHora(consulta.getDataHora());
         response.setDescricao(consulta.getDescricao());
         response.setStatus(consulta.getStatus());
+
         Usuario paciente = mapaUsuarios.get(consulta.getIdPaciente());
         if (paciente != null) {
             response.setIdPaciente(paciente.getId());
             response.setNomePaciente(paciente.getNome() + " " + (paciente.getSobrenome() != null ? paciente.getSobrenome() : ""));
         }
+
         Usuario medico = mapaUsuarios.get(consulta.getIdMedico());
         if (medico != null) {
             response.setIdMedico(medico.getId());

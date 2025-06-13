@@ -40,7 +40,11 @@ export default function Login() {
 
       dispatch(setAuth(authPayload));
       
-      navigate("/");
+            if (res.perfil?.toUpperCase() === 'A') {
+        navigate("/admin/empresas");
+      } else {
+        navigate("/");
+      }
 
     } catch (err) {
       const mensagemErro =

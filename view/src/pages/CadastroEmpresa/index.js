@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { empresaService } from "../../service/empresaService.js";
+import { empresaService } from "../../service/empresaService";
 import BuscaEndereco from "../../pages/BuscaEndereco";
 import styles from './index.module.css';
 
@@ -62,7 +62,7 @@ export default function CadastroEmpresa() {
             alert("Empresa cadastrada com sucesso!");
             limparFormulario();
         } catch (error) {
-            setErroGeral(error.response?.data?.message || "Erro ao cadastrar empresa. Verifique se o CNPJ já não existe.");
+            setErroGeral(error.response?.data || "Erro ao cadastrar empresa. Verifique se o CNPJ já não existe.");
         } finally {
             setCarregando(false);
         }
@@ -71,8 +71,16 @@ export default function CadastroEmpresa() {
     return (
         <div className="container py-5">
             <div className={`card shadow-lg p-4 mx-auto ${styles.formContainer}`}>
-                <h2 className="text-center fw-bold">Cadastro de Empresa</h2>
-                <form onSubmit={handleSubmit} className="mt-4">
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h2 className="text-center fw-bold mb-0">Cadastro de Empresa</h2>
+                    <button 
+                        className="btn btn-outline-secondary" 
+                        onClick={() => navigate("/admin/empresas")}
+                    >
+                        <i className="bi bi-arrow-left"></i> Voltar
+                    </button>
+                </div>
+                <form onSubmit={handleSubmit}>
                     <div className="mb-3">
                         <label className="form-label">Nome da Empresa</label>
                         <input type="text" className="form-control" value={nome} onChange={e => setNome(e.target.value)} required disabled={carregando} />
@@ -90,19 +98,16 @@ export default function CadastroEmpresa() {
                         />
                         {erroCnpj && <div className="invalid-feedback">{erroCnpj}</div>}
                     </div>
-                    <BuscaEndereco setEndereco={setEndereco} disabled={carregando} />
+                    <BuscaEndereco setEndereco={setEndereco} endereco={endereco} disabled={carregando} />
                     <div className="row mt-3">
                         <div className="col-md-4"><label className="form-label">CEP</label><input type="text" className="form-control" value={endereco.cep || ''} readOnly disabled /></div>
                         <div className="col-md-5"><label className="form-label">Cidade</label><input type="text" className="form-control" value={endereco.localidade || ''} readOnly disabled /></div>
                         <div className="col-md-3"><label className="form-label">UF</label><input type="text" className="form-control" value={endereco.uf || ''} readOnly disabled /></div>
                     </div>
                     {erroGeral && <div className="alert alert-danger mt-3">{erroGeral}</div>}
-                    <div className="d-grid mt-4 gap-2">
+                    <div className="d-grid mt-4">
                         <button type="submit" className="btn btn-primary" disabled={carregando || !!erroCnpj}>
                             {carregando ? "Cadastrando..." : "Cadastrar Empresa"}
-                        </button>
-                        <button type="button" className="btn btn-outline-secondary" onClick={() => navigate("/")}>
-                            Voltar
                         </button>
                     </div>
                 </form>

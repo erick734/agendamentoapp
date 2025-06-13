@@ -5,8 +5,11 @@ import { selectUser } from '../../redux/authSlice';
 import styles from "./sidebar.module.css";
 
 export default function SideBar({ expanded, setExpanded }) {
-
   const user = useSelector(selectUser);
+
+  const homePath = user?.perfil === 'a' ? '/admin/empresas' : '/';
+  const homeText = user?.perfil === 'a' ? 'Home (Empresas)' : 'Home (Consultas)';
+  const homeIcon = user?.perfil === 'a' ? 'bi-diagram-3-fill' : 'bi-house-door-fill';
 
   return (
     <>
@@ -37,13 +40,15 @@ export default function SideBar({ expanded, setExpanded }) {
             &times;
           </button>
         </div>
+        
         <ul className={styles.navList}>
           <li>
-            <Link className={styles.navLink} to="/" onClick={() => setExpanded(false)}>
-              <i className="bi bi-house-door-fill"></i>
-              <span>Home</span>
+            <Link className={styles.navLink} to={homePath} onClick={() => setExpanded(false)}>
+              <i className={`bi ${homeIcon}`}></i>
+              <span>{homeText}</span>
             </Link>
           </li>
+          
           <li>
             <Link className={styles.navLink} to="/editar-perfil" onClick={() => setExpanded(false)}>
               <i className="bi bi-person-fill-gear"></i>

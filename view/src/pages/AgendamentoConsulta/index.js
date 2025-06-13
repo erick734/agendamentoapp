@@ -3,7 +3,8 @@ import { useSelector } from "react-redux";
 import { selectUser } from "../../redux/authSlice";
 import { consultaService } from "../../service/consultaService";
 import { usuarioService } from "../../service/usuarioService";
-import styles from "./index.module.css";
+import { empresaService } from "../../service/empresaService";
+import Modal from "../../components/Modal";
 
 const horariosFixos = [
   "08:00", "08:30", "09:00", "09:30", "10:00", "10:30",
@@ -19,10 +20,15 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
   const [horario, setHorario] = useState("");
   const [idMedico, setIdMedico] = useState("");
   const [descricao, setDescricao] = useState("");
+  
+  const [empresas, setEmpresas] = useState([]);
+  const [idEmpresa, setIdEmpresa] = useState("");
   const [medicos, setMedicos] = useState([]);
+  
   const [horariosDisponiveis, setHorariosDisponiveis] = useState(horariosFixos);
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
+  const [loadingEmpresas, setLoadingEmpresas] = useState(true);
   const [loadingMedicos, setLoadingMedicos] = useState(false);
   const [loadingHorarios, setLoadingHorarios] = useState(false);
 
@@ -35,18 +41,42 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
     }
   }, [consultaProp]);
 
-  const carregarMedicos = useCallback(async () => {
-    setLoadingMedicos(true);
-    try {
-      const listaMedicos = await usuarioService.getUsuariosPorPerfil("m");
-      setMedicos(listaMedicos || []);
-    } catch (error) {
-      console.error("Erro ao carregar médicos:", error);
-      setFormError("Falha ao carregar a lista de médicos.");
-    } finally {
-      setLoadingMedicos(false);
-    }
+  useEffect(() => {
+    setLoadingEmpresas(true);
+    empresaService.getEmpresas()
+      .then(data => {
+        setEmpresas(data || []);
+      })
+      .catch(err => {
+        console.error("Erro ao buscar empresas:", err);
+        setFormError("Não foi possível carregar as clínicas.");
+      })
+      .finally(() => setLoadingEmpresas(false));
   }, []);
+
+  const carregarMedicosPorEmpresa = useCallback((empresaId) => {
+    if (!empresaId) {
+        setMedicos([]);
+        setIdMedico("");
+        return;
+    }
+    setLoadingMedicos(true);
+    setMedicos([]);
+    setIdMedico("");
+    usuarioService.getMedicosPorEmpresa(empresaId)
+      .then(data => {
+        setMedicos(data || []);
+      })
+      .catch(err => {
+        console.error("Erro ao carregar médicos:", err);
+        setFormError("Não foi possível carregar os médicos desta clínica.");
+      })
+      .finally(() => setLoadingMedicos(false));
+  }, []);
+
+  useEffect(() => {
+    carregarMedicosPorEmpresa(idEmpresa);
+  }, [idEmpresa, carregarMedicosPorEmpresa]);
 
   const carregarHorariosDisponiveis = useCallback(async (medicoId, data) => {
     if (!medicoId || !data) {
@@ -56,31 +86,21 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
     setLoadingHorarios(true);
     setFormError("");
     try {
-      // ✨ CORRIGIDO: A função do service agora retorna os dados diretamente (o array)
       const consultasDoMedico = await consultaService.getConsultasPorMedico(medicoId);
-      
       const horariosOcupadosNaData = consultasDoMedico
         .filter(c => c.dataHora && c.dataHora.startsWith(data))
         .map(c => c.dataHora.split('T')[1].substring(0, 5));
-
       const disponiveis = horariosFixos.filter(h => !horariosOcupadosNaData.includes(h));
       setHorariosDisponiveis(disponiveis);
-
       if (disponiveis.length === 0) {
         setFormError("Nenhum horário disponível para este médico nesta data.");
       }
     } catch (error) {
-      console.error("Erro ao carregar horários:", error);
       setFormError("Falha ao verificar horários.");
-      setHorariosDisponiveis(horariosFixos);
     } finally {
       setLoadingHorarios(false);
     }
   }, []);
-
-  useEffect(() => {
-    carregarMedicos();
-  }, [carregarMedicos]);
 
   useEffect(() => {
     if (idMedico && dataConsulta) {
@@ -92,21 +112,20 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
     e.preventDefault();
     setFormError("");
     if (!usuarioLogado?.id) {
-        setFormError("Erro: Usuário não identificado. Por favor, faça o login novamente.");
+        setFormError("Erro: Usuário não identificado.");
         return;
     }
-    if (!dataConsulta || !horario || !idMedico) {
-        setFormError("Por favor, preencha a data, horário e selecione um médico.");
+    if (!idEmpresa || !idMedico || !dataConsulta || !horario) {
+        setFormError("Por favor, preencha todos os campos.");
         return;
     }
-    const dataHoraCompleta = `${dataConsulta}T${horario}:00`;
+    setLoading(true);
     const dadosConsulta = {
-      dataHora: dataHoraCompleta,
+      dataHora: `${dataConsulta}T${horario}:00`,
       idMedico: parseInt(idMedico),
       idPaciente: usuarioLogado.id, 
       descricao: descricao,
     };
-    setLoading(true);
     try {
       if (consultaProp?.id) {
         await consultaService.atualizarConsulta(consultaProp.id, dadosConsulta);
@@ -118,66 +137,73 @@ export default function AgendamentoConsulta({ consulta: consultaProp, onClose, o
       if (onAgendamentoRealizado) onAgendamentoRealizado();
       if (onClose) onClose();
     } catch (error) {
-      console.error("Erro ao salvar consulta:", error);
-      const errorMsg = error.response?.data?.message || error.response?.data || "Erro ao salvar a consulta.";
-      setFormError(errorMsg);
+      setFormError(error.response?.data?.message || "Erro ao salvar a consulta.");
     } finally {
       setLoading(false);
     }
   };
-  
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      if (onClose) onClose();
-    }
-  };
-  
+
   return (
-    <div className={styles.modalOverlay} onClick={handleOverlayClick}>
-      <div className={styles.modalContent}>
-        <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>
-            {consultaProp ? "Editar Consulta" : "Agendar Consulta"}
-          </h2>
-          <button onClick={onClose} className={styles.closeButton} aria-label="Fechar modal">&times;</button>
-        </div>
-        <form onSubmit={handleSalvarOuEditar} className="mt-3">
+    <Modal title={consultaProp ? "Editar Consulta" : "Agendar Nova Consulta"} onClose={onClose}>
+        <form onSubmit={handleSalvarOuEditar} className="py-2">
+          
           <div className="mb-3">
-            <label htmlFor="medico" className="form-label fw-bold">Médico</label>
-            <select id="medico" className="form-select form-select-lg" value={idMedico} onChange={(e) => setIdMedico(e.target.value)} disabled={loadingMedicos} required>
-              <option value="">{loadingMedicos ? "Carregando médicos..." : "Selecione um médico"}</option>
+            <label htmlFor="empresa" className="form-label fw-bold">1. Escolha a Clínica</label>
+            <select
+              id="empresa"
+              className="form-select"
+              value={idEmpresa}
+              onChange={(e) => setIdEmpresa(e.target.value)}
+              disabled={loadingEmpresas || loading}
+              required
+            >
+              <option value="">{loadingEmpresas ? "Carregando..." : "Selecione uma clínica"}</option>
+              {empresas.map((emp) => (<option key={emp.id} value={emp.id}>{emp.nome}</option>))}
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="medico" className="form-label fw-bold">2. Escolha o Médico</label>
+            <select 
+              id="medico" 
+              className="form-select" 
+              value={idMedico} 
+              onChange={(e) => setIdMedico(e.target.value)} 
+              disabled={!idEmpresa || loadingMedicos || loading} 
+              required
+            >
+              <option value="">{loadingMedicos ? "Carregando..." : "Primeiro, escolha uma clínica"}</option>
               {medicos.map((med) => (<option key={med.id} value={med.id}>{med.nome} {med.sobrenome || ""}</option>))}
             </select>
           </div>
-          <div className="row">
-            <div className="col-md-6 mb-3">
-              <label htmlFor="dataConsulta" className="form-label fw-bold">Data</label>
-              <input type="date" id="dataConsulta" className="form-control form-control-lg" value={dataConsulta} onChange={(e) => setDataConsulta(e.target.value)} min={new Date().toISOString().split('T')[0]} required disabled={!idMedico} />
+
+          <div className="row g-2 mb-3">
+            <div className="col-md-7">
+              <label htmlFor="dataConsulta" className="form-label fw-bold">3. Escolha a Data</label>
+              <input type="date" id="dataConsulta" className="form-control" value={dataConsulta} onChange={(e) => setDataConsulta(e.target.value)} min={new Date().toISOString().split('T')[0]} required disabled={!idMedico || loading} />
             </div>
-            <div className="col-md-6 mb-3">
-              <label htmlFor="horario" className="form-label fw-bold">Horário</label>
-              <select id="horario" className="form-select form-select-lg" value={horario} onChange={(e) => setHorario(e.target.value)} disabled={!idMedico || !dataConsulta || loadingHorarios || horariosDisponiveis.length === 0} required>
-                <option value="">{loadingHorarios ? "Verificando..." : "Selecione um horário"}</option>
+            <div className="col-md-5">
+              <label htmlFor="horario" className="form-label fw-bold">4. Horário</label>
+              <select id="horario" className="form-select" value={horario} onChange={(e) => setHorario(e.target.value)} disabled={!idMedico || !dataConsulta || loadingHorarios || horariosDisponiveis.length === 0 || loading} required>
+                <option value="">{loadingHorarios ? "..." : "Selecione"}</option>
                 {horariosDisponiveis.map(h => (<option key={h} value={h}>{h}</option>))}
               </select>
-              {horariosDisponiveis.length === 0 && idMedico && dataConsulta && !loadingHorarios && (<small className="text-danger d-block mt-1">{formError || "Nenhum horário disponível."}</small>)}
             </div>
           </div>
+          
+          {formError && (<p className="text-danger text-center small mt-3">{formError}</p>)}
+
           <div className="mb-3">
-            <label htmlFor="descricao" className="form-label fw-bold">Descrição (Opcional)</label>
-            <textarea id="descricao" className="form-control" rows="3" value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex: Retorno, Check-up anual..." />
+            <label htmlFor="descricao" className="form-label">Descrição (Opcional)</label>
+            <textarea id="descricao" className="form-control" rows="2" value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex: Retorno, Exames..." disabled={loading}/>
           </div>
-          {formError && !horariosDisponiveis.length && <p className="text-danger text-center">{formError}</p>}
-          <div className="d-grid gap-2 mt-4">
-            <button type="submit" className="btn btn-primary btn-lg" disabled={loading || loadingMedicos || loadingHorarios || !idMedico || !dataConsulta || !horario}>
-                {loading ? "Salvando..." : (consultaProp ? "Salvar Alterações" : "Agendar Consulta")}
-            </button>
-            <button type="button" className="btn btn-outline-secondary" onClick={onClose} disabled={loading}>
-                Cancelar
+          
+          <div className="d-grid mt-4">
+            <button type="submit" className="btn btn-primary" disabled={loading || !horario}>
+                {loading ? "Salvando..." : (consultaProp ? "Salvar Alterações" : "Confirmar Agendamento")}
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </Modal>
   );
 }

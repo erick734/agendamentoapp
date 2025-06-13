@@ -1,5 +1,6 @@
 package com.listagemUsuario.aulaBack.domain.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.listagemUsuario.aulaBack.application.objetct.usuario.UsuarioRequest;
 import com.listagemUsuario.aulaBack.domain.valueObjetcs.Email;
 import com.listagemUsuario.aulaBack.domain.valueObjetcs.Telefone;
@@ -14,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Entity
 @Table(name = "usuario")
 @Getter
@@ -39,6 +41,10 @@ public class Usuario implements UserDetails {
 
     @Embedded
     private Email email;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empresa_id")
+    private Empresa empresa;
 
     public Usuario(UsuarioRequest entrada) {
         this.usuario = entrada.email();

@@ -40,12 +40,18 @@ const alterarSenha = async (data) => {
     return response.data;
 };
 
+const getMedicosPorEmpresa = async (empresaId) => {
+  const response = await apiClient.get(`/usuario/medicos/empresa/${empresaId}`);
+  return response.data;
+};
+
 export const usuarioService = {
   cadastrar,
   getUsuarioById,
   atualizarPerfil,
   listarUsuarios,
   getUsuariosPorPerfil,
+  getMedicosPorEmpresa,
   alterarEmail,
   alterarSenha,
 };

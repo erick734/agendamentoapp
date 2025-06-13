@@ -10,5 +10,7 @@ public record UsuarioResponse(
         String cep,
         String localidade,
         String uf,
-        String email
+        String email,
+        Long idEmpresa,
+        String nomeEmpresa
 ) {}

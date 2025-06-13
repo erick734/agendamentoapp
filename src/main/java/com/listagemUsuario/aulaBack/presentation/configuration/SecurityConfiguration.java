@@ -31,16 +31,15 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Rotas Públicas
+
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuario").permitAll()
                         .requestMatchers(HttpMethod.GET, "/usuario/perfil/**").authenticated()
 
-                        // ✨ ADICIONADO: Regra explícita para criar empresa
+                        .requestMatchers(HttpMethod.GET, "/empresas").permitAll()
                         .requestMatchers(HttpMethod.POST, "/empresas").hasRole("A")
 
-                        // Suas outras regras
                         .requestMatchers(HttpMethod.DELETE, "/consultas/**").hasRole("A")
                         .requestMatchers(HttpMethod.PATCH, "/consultas/**").hasAnyRole("A", "M", "P")
                         .requestMatchers(HttpMethod.PUT, "/consultas/**").hasAnyRole("A", "P")

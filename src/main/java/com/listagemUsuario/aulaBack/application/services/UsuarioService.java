@@ -4,7 +4,9 @@ import com.listagemUsuario.aulaBack.application.objetct.alterarDados.AlterarEmai
 import com.listagemUsuario.aulaBack.application.objetct.alterarDados.AlterarSenhaRequest;
 import com.listagemUsuario.aulaBack.application.objetct.usuario.UsuarioRequest;
 import com.listagemUsuario.aulaBack.application.objetct.usuario.UsuarioResponse;
+import com.listagemUsuario.aulaBack.domain.entities.Empresa;
 import com.listagemUsuario.aulaBack.domain.entities.Usuario;
+import com.listagemUsuario.aulaBack.domain.repository.EmpresaRepository;
 import com.listagemUsuario.aulaBack.domain.repository.UsuarioRepository;
 import com.listagemUsuario.aulaBack.domain.valueObjetcs.Email;
 import com.listagemUsuario.aulaBack.domain.valueObjetcs.Telefone;
@@ -25,6 +27,9 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private EmpresaRepository empresaRepository;
+
     public UsuarioResponse usuarioLogado() {
         return toResponse(getUsuarioLogado());
     }
@@ -43,12 +48,31 @@ public class UsuarioService {
         if ("a".equalsIgnoreCase(entrada.perfil())) {
             throw new AccessDeniedException("A criação de administradores só pode ser feita pela aplicação Desktop.");
         }
-
         if (usuarioRepository.findByEmail(entrada.email()).isPresent()) {
             throw new RuntimeException("Este e-mail já está em uso.");
         }
-        var usuario = new Usuario(entrada);
+
+        Usuario usuario = new Usuario();
+        usuario.setNome(entrada.nome());
+        usuario.setSobrenome(entrada.sobrenome());
+        usuario.setEmail(new Email(entrada.email()));
+        usuario.setUsuario(entrada.email());
         usuario.setSenha(entrada.senha());
+        usuario.setPerfil(entrada.perfil());
+        usuario.setTelefone(new Telefone(entrada.telefone()));
+        usuario.setCep(entrada.cep());
+        usuario.setLocalidade(entrada.localidade());
+        usuario.setUf(entrada.uf());
+
+        if ("m".equalsIgnoreCase(entrada.perfil())) {
+            if (entrada.idEmpresa() == null) {
+                throw new IllegalArgumentException("Médicos devem ser associados a uma empresa.");
+            }
+            Empresa empresa = empresaRepository.findById(entrada.idEmpresa())
+                    .orElseThrow(() -> new RuntimeException("Empresa não encontrada."));
+            usuario.setEmpresa(empresa);
+        }
+
         return usuarioRepository.save(usuario);
     }
 
@@ -97,6 +121,12 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    public List<UsuarioResponse> listarPorPerfilEIDEmpresa(String perfil, Long empresaId) {
+        return usuarioRepository.findByPerfilAndEmpresaId(perfil, empresaId).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     public void alterarEmail(String emailUsuarioLogado, AlterarEmailRequest request) {
         Usuario usuario = usuarioRepository.findByEmail(emailUsuarioLogado)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado."));
@@ -131,6 +161,9 @@ public class UsuarioService {
     }
 
     private UsuarioResponse toResponse(Usuario usuario) {
+        Long idEmpresa = (usuario.getEmpresa() != null) ? usuario.getEmpresa().getId() : null;
+        String nomeEmpresa = (usuario.getEmpresa() != null) ? usuario.getEmpresa().getNome() : null;
+
         return new UsuarioResponse(
                 usuario.getId(),
                 usuario.getUsuario(),
@@ -141,30 +174,9 @@ public class UsuarioService {
                 usuario.getCep(),
                 usuario.getLocalidade(),
                 usuario.getUf(),
-                usuario.getEmail() != null ? usuario.getEmail().getEmail() : null
+                usuario.getEmail() != null ? usuario.getEmail().getEmail() : null,
+                idEmpresa,
+                nomeEmpresa
         );
-    }
-
-    // PARA O DESKTOP
-    public boolean jaExisteAdministrador() {
-        return usuarioRepository.findByPerfil("a").stream().findAny().isPresent();
-    }
-
-    public Usuario criarAdministradorInicial(UsuarioRequest entrada) {
-        if (!"a".equalsIgnoreCase(entrada.perfil())) {
-            throw new AccessDeniedException("Este endpoint só pode criar administradores.");
-        }
-
-        if (jaExisteAdministrador()) {
-            throw new AccessDeniedException("Já existe um administrador cadastrado.");
-        }
-
-        if (usuarioRepository.findByEmail(entrada.email()).isPresent()) {
-            throw new RuntimeException("Este e-mail já está em uso.");
-        }
-
-        Usuario usuario = new Usuario(entrada);
-        usuario.setSenha(entrada.senha());
-        return usuarioRepository.save(usuario);
     }
 }

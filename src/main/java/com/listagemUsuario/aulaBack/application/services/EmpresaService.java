@@ -6,6 +6,8 @@ import com.listagemUsuario.aulaBack.domain.repository.EmpresaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class EmpresaService {
 
@@ -17,13 +19,12 @@ public class EmpresaService {
             throw new IllegalArgumentException("Uma empresa com este CNPJ já foi cadastrada.");
         }
 
-        Empresa novaEmpresa = new Empresa();
-        novaEmpresa.setNome(request.nome());
-        novaEmpresa.setCnpj(request.cnpj());
-        novaEmpresa.setCep(request.cep());
-        novaEmpresa.setUf(request.uf());
-        novaEmpresa.setLocalidade(request.localidade());
+        Empresa novaEmpresa = new Empresa(request);
 
         return empresaRepository.save(novaEmpresa);
+    }
+
+    public List<Empresa> listarEmpresas() {
+        return empresaRepository.findAll();
     }
 }
