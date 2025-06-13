@@ -1,15 +1,32 @@
-.logoutButton {
-  background-color: #dc3545;
-  color: #fff !important;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  line-height: 1.5;
-  transition: background-color 0.2s ease-in-out;
+.navbar {
+    background-color: #0b243c;
+    box-shadow: 0 2px 4px rgba(184, 174, 174, 0.1);
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
 }
 
-.logoutButton:hover {
-  background-color: #c82333;
-  color: #fff !important;
+.navText {
+    color: rgba(255, 255, 255, 0.8) !important;
+    margin-right: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.logoutButton, .loginLink {
+    background-color: transparent;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 50rem;
+    padding: 0.4rem 1.2rem;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logoutButton:hover, .loginLink:hover {
+    background-color: white;
+    color: #0b243c !important;
 }

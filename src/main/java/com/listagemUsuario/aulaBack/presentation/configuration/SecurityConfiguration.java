@@ -32,18 +32,20 @@ public class SecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Rotas Públicas
-                        .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**", "/swagger-resources/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuario").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/usuario/perfil/**").authenticated()
 
-                        // Regras para CONSULTAS
+                        // ✨ ADICIONADO: Regra explícita para criar empresa
+                        .requestMatchers(HttpMethod.POST, "/empresas").hasRole("A")
+
+                        // Suas outras regras
                         .requestMatchers(HttpMethod.DELETE, "/consultas/**").hasRole("A")
-                        .requestMatchers(HttpMethod.PATCH, "/consultas/**").hasAnyRole("A", "M")
+                        .requestMatchers(HttpMethod.PATCH, "/consultas/**").hasAnyRole("A", "M", "P")
                         .requestMatchers(HttpMethod.PUT, "/consultas/**").hasAnyRole("A", "P")
                         .requestMatchers(HttpMethod.POST, "/consultas").hasAnyRole("A", "P")
                         .requestMatchers(HttpMethod.GET, "/consultas/**").authenticated()
-
-                        // Regra para USUARIO
-                        .requestMatchers("/usuario/**").authenticated()
 
                         .anyRequest().authenticated()
                 )
@@ -55,8 +57,8 @@ public class SecurityConfiguration {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "Cache-Control"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

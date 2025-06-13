@@ -1,12 +1,17 @@
 import apiClient from "./api";
 
-const getMinhasConsultas = async () => {
+const getConsultas = async () => {
   const response = await apiClient.get("/consultas");
   return response.data;
 };
 
 const getConsultasPorMedico = async (medicoId) => {
   const response = await apiClient.get(`/consultas/medico/${medicoId}`);
+  return response.data;
+};
+
+const getConsultasPorPaciente = async (pacienteId) => {
+  const response = await apiClient.get(`/consultas/paciente/${pacienteId}`);
   return response.data;
 };
 
@@ -36,8 +41,9 @@ const cancelarConsulta = async (id) => {
 }
 
 export const consultaService = {
-  getMinhasConsultas,
+  getConsultas,
   getConsultasPorMedico,
+  getConsultasPorPaciente,
   criarConsulta,
   atualizarConsulta,
   deletarConsulta,

@@ -1,7 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { selectUser, logout } from '../../redux/authSlice';
-// ✨ 1. IMPORTE O CONTAINER AQUI
 import { Nav, Navbar, Container } from 'react-bootstrap'; 
 import styles from './Header.module.css';
 
@@ -17,7 +16,6 @@ export default function Header() {
 
   return (
     <Navbar className={styles.navbar} expand="lg">
-      {/* ✨ 2. ADICIONE O CONTAINER ENVOLVENDO O CONTEÚDO */}
       <Container>
         <Navbar.Brand as={Link} to="/">Clínica Senac</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />

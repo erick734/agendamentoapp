@@ -1,0 +1,38 @@
+.toastContainer {
+  position: fixed;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  z-index: 2000;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  animation: slide-in-toast 0.5s ease-out forwards;
+}
+
+@keyframes slide-in-toast {
+  from {
+    top: 0;
+    opacity: 0;
+  }
+  to {
+    top: 90px;
+    opacity: 1;
+  }
+}
+
+.success {
+  background-color: #198754;
+}
+
+.error {
+  background-color: #dc3545;
+}
+
+.icon {
+  font-size: 1.5rem;
+}

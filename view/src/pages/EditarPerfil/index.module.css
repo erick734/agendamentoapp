@@ -2,7 +2,10 @@
   padding-top: 2rem;
   padding-bottom: 4rem;
   background-color: #f4f7f6;
-  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Alinha o card no topo */
+  min-height: calc(100vh - 72px); /* Altura da tela menos o header */
 }
 
 .formCard {
@@ -11,6 +14,8 @@
   border: none;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
   padding: 2rem 2.5rem;
+  width: 100%;
+  max-width: 800px; /* Aumenta um pouco a largura máxima */
 }
 
 .formTitle {
@@ -23,16 +28,17 @@
 .formSubtitle {
   color: #6c757d;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
-.actionButtonsContainer {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    padding: 1.5rem 0;
-    border-top: 1px solid #e9ecef;
-    margin-top: 1.5rem;
+/* Container para os botões de ação (Alterar E-mail/Senha) */
+.actionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem 0;
+  border-top: 1px solid #e9ecef;
+  margin-top: 1.5rem;
 }
 
 .message {

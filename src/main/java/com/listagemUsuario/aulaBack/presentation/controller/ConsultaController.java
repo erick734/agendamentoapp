@@ -18,28 +18,39 @@ public class ConsultaController {
     private ConsultaService consultaService;
 
     @GetMapping
-    public ResponseEntity<List<ConsultaResponse>> listarConsultas() {
-        return ResponseEntity.ok(consultaService.listarConsultasParaUsuarioLogado());
+    public ResponseEntity<List<ConsultaResponse>> listarTodasConsultas() {
+        List<ConsultaResponse> response = consultaService.listarTodas();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/paciente/{idPaciente}")
+    public ResponseEntity<List<ConsultaResponse>> listarConsultasPorPaciente(@PathVariable Long idPaciente) {
+        List<ConsultaResponse> response = consultaService.buscarPorIdPaciente(idPaciente);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/medico/{idMedico}")
     public ResponseEntity<List<ConsultaResponse>> listarConsultasPorMedico(@PathVariable Long idMedico) {
-        return ResponseEntity.ok(consultaService.listarConsultasPorMedico(idMedico));
+        List<ConsultaResponse> response = consultaService.buscarPorIdMedico(idMedico);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ConsultaResponse> buscarConsultaPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(consultaService.buscarPorIdFormatado(id));
+        ConsultaResponse response = consultaService.buscarPorIdFormatado(id);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping
     public ResponseEntity<Consulta> criarConsulta(@RequestBody ConsultaRequest request) {
-        return ResponseEntity.status(201).body(consultaService.salvarConsulta(request));
+        Consulta novaConsulta = consultaService.criarConsulta(request);
+        return ResponseEntity.status(201).body(novaConsulta);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Consulta> atualizarConsulta(@PathVariable Long id, @RequestBody ConsultaRequest request) {
-        return ResponseEntity.ok(consultaService.atualizarConsulta(id, request));
+        Consulta consultaAtualizada = consultaService.atualizarConsulta(id, request);
+        return ResponseEntity.ok(consultaAtualizada);
     }
 
     @DeleteMapping("/{id}")
@@ -49,14 +60,14 @@ public class ConsultaController {
     }
 
     @PatchMapping("/{id}/aprovar")
-    public ResponseEntity<Void> aprovarConsulta(@PathVariable Long id) {
-        consultaService.mudarStatusConsulta(id, "APROVADA");
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Consulta> aprovarConsulta(@PathVariable Long id) {
+        Consulta consultaAprovada = consultaService.aprovarConsulta(id);
+        return ResponseEntity.ok(consultaAprovada);
     }
 
     @PatchMapping("/{id}/cancelar")
-    public ResponseEntity<Void> cancelarConsulta(@PathVariable Long id) {
-        consultaService.mudarStatusConsulta(id, "CANCELADA");
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Consulta> cancelarConsulta(@PathVariable Long id) {
+        Consulta consultaCancelada = consultaService.cancelarConsulta(id);
+        return ResponseEntity.ok(consultaCancelada);
     }
 }

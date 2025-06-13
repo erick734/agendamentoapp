@@ -1,13 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { selectUser, selectIsAuthenticated, logout } from "../../redux/authSlice";
-import { 
-  fetchConsultas, 
-  selectAllConsultas, 
-  selectConsultasStatus, 
-  selectConsultasError
-} from "../../redux/consultaSlice";
 import { consultaService } from "../../service/consultaService";
 import AgendamentoConsulta from "../AgendamentoConsulta";
 import { Container } from 'react-bootstrap';
@@ -16,58 +10,87 @@ import styles from './index.module.css';
 export default function Consulta() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const [consultas, setConsultas] = useState([]);
+  const [status, setStatus] = useState("idle");
+  const [error, setError] = useState(null);
+  
   const [modalAberto, setModalAberto] = useState(false);
   const [consultaParaEditar, setConsultaParaEditar] = useState(null);
 
   const user = useSelector(selectUser);
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  const consultas = useSelector(selectAllConsultas);
-  const status = useSelector(selectConsultasStatus);
-  const error = useSelector(selectConsultasError);
-
-  useEffect(() => {
-    if (isAuthenticated && status === 'idle') {
-      dispatch(fetchConsultas());
+ 
+  const buscarMinhasConsultas = useCallback(async () => {
+    if (!user) return;
+    setStatus("loading");
+    setError(null);
+    try {
+      let data;
+      switch (user.perfil?.toUpperCase()) {
+        case "A":
+          data = await consultaService.getConsultas();
+          break;
+        case "M":
+          data = await consultaService.getConsultasPorMedico(user.id);
+          break;
+        case "P":
+          data = await consultaService.getConsultasPorPaciente(user.id);
+          break;
+        default:
+          data = [];
+          break;
+      }
+      setConsultas(Array.isArray(data) ? data : []);
+      setStatus("succeeded");
+    } catch (err) {
+      setError(err.response?.data || "Erro ao carregar consultas.");
+      setStatus("failed");
     }
-  }, [status, dispatch, isAuthenticated]);
+  }, [user]);
   
-  const handleAprovar = async (id) => {
+  useEffect(() => {
+    if (isAuthenticated) {
+      buscarMinhasConsultas();
+    }
+  }, [isAuthenticated, buscarMinhasConsultas]);
+
+  const handleAction = async (actionCallback) => {
+    try {
+      await actionCallback();
+      buscarMinhasConsultas();
+    } catch (error) {
+      const errorMsg = error.response?.data || "Ocorreu um erro.";
+      alert(errorMsg);
+      if (error.response?.status === 403) {
+          dispatch(logout());
+          navigate("/login");
+      }
+    }
+  };
+
+  const handleAprovar = (id) => {
     if (window.confirm("Tem certeza que deseja aprovar esta consulta?")) {
-      try {
-        await consultaService.aprovarConsulta(id);
-        dispatch(fetchConsultas());
-      } catch (error) {
-        alert(error.response?.data || "Erro ao aprovar consulta.");
-      }
+      handleAction(() => consultaService.aprovarConsulta(id));
     }
   };
 
-  const handleCancelar = async (id) => {
+  const handleCancelar = (id) => {
     if (window.confirm("Tem certeza que deseja cancelar esta consulta?")) {
-      try {
-        await consultaService.cancelarConsulta(id);
-        dispatch(fetchConsultas());
-      } catch (error) {
-        alert(error.response?.data || "Erro ao cancelar consulta.");
-      }
+      handleAction(() => consultaService.cancelarConsulta(id));
     }
   };
 
-  const handleDeletar = async (id) => {
-    if (window.confirm("Atenção! Esta ação é irreversível. Deseja deletar a consulta?")) {
-      try {
-        await consultaService.deletarConsulta(id);
-        dispatch(fetchConsultas());
-      } catch (error) {
-        alert(error.response?.data || "Erro ao deletar consulta.");
-      }
+  const handleDeletar = (id) => {
+    if (window.confirm("Atenção! Esta ação é irreversível. Deseja deletar?")) {
+      handleAction(() => consultaService.deletarConsulta(id));
     }
   };
   
   const handleAgendamentoRealizado = () => {
     setModalAberto(false);
     setConsultaParaEditar(null);
-    dispatch(fetchConsultas());
+    buscarMinhasConsultas();
   };
 
   const handleAbrirEdicao = (consulta) => {
@@ -91,18 +114,11 @@ export default function Consulta() {
   };
 
   const renderContent = () => {
-    if (!isAuthenticated) {
-      return <div className="alert alert-warning text-center" role="alert">Por favor, faça login para ver suas consultas.</div>;
-    }
-    if (status === "loading" && consultas.length === 0) {
-      return <div className="text-center my-5"><div className="spinner-border text-primary" role="status"><span className="visually-hidden">Carregando...</span></div></div>;
-    }
-    if (status === "failed" && !consultas.length) {
-      return <div className="alert alert-danger" role="alert">Erro ao carregar consultas: {error}</div>;
-    }
-    if (status === "succeeded" && consultas.length === 0) {
-      return <div className="text-center p-5 bg-light rounded"><p className="lead">Nenhuma consulta agendada no momento.</p></div>;
-    }
+    if (!isAuthenticated) return <div className="alert alert-warning text-center" role="alert">Por favor, faça login para ver suas consultas.</div>;
+    if (status === "loading") return <div className="text-center my-5"><div className="spinner-border text-primary" role="status"><span className="visually-hidden">Carregando...</span></div></div>;
+    if (status === "failed") return <div className="alert alert-danger" role="alert">Erro ao carregar consultas: {error}</div>;
+    if (consultas.length === 0) return <div className="text-center p-5 bg-light rounded"><p className="lead">Nenhuma consulta agendada no momento.</p></div>;
+    
     return (
       <ul className={styles.consultaList}>
         {consultas.map((consulta) => (
@@ -154,7 +170,6 @@ export default function Consulta() {
           {renderContent()}
         </div>
       </Container>
-
       {modalAberto && (
         <AgendamentoConsulta
           consulta={consultaParaEditar}

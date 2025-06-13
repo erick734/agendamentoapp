@@ -59,7 +59,6 @@ export default function Login() {
   return (
     <div className={styles.loginContainer}>
       <form onSubmit={handleSubmit} className={styles.formWrapper}>
-        <h2 className={styles.formTitle}>Bem-vindo!</h2>
         <div className={styles.inputGroup}>
           <label>Usuário</label>
           <input

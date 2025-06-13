@@ -40,6 +40,10 @@ public class UsuarioService {
     }
 
     public Usuario salvar(UsuarioRequest entrada) {
+        if ("a".equalsIgnoreCase(entrada.perfil())) {
+            throw new AccessDeniedException("A criação de administradores só pode ser feita pela aplicação Desktop.");
+        }
+
         if (usuarioRepository.findByEmail(entrada.email()).isPresent()) {
             throw new RuntimeException("Este e-mail já está em uso.");
         }
@@ -63,7 +67,6 @@ public class UsuarioService {
         if (!usuarioLogado.getId().equals(id) && !usuarioLogado.getPerfil().equalsIgnoreCase("A")) {
             throw new AccessDeniedException("Você não tem permissão para editar este perfil.");
         }
-
         Usuario usuarioParaEditar = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Erro: Usuário com ID " + id + " não encontrado."));
 
@@ -73,7 +76,6 @@ public class UsuarioService {
         usuarioParaEditar.setCep(entrada.cep());
         usuarioParaEditar.setLocalidade(entrada.localidade());
         usuarioParaEditar.setUf(entrada.uf());
-
         usuarioRepository.save(usuarioParaEditar);
         return toResponse(usuarioParaEditar);
     }
@@ -119,7 +121,6 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
-    // --- MÉTODOS PRIVADOS ---
     private Usuario getUsuarioLogado() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
@@ -142,5 +143,28 @@ public class UsuarioService {
                 usuario.getUf(),
                 usuario.getEmail() != null ? usuario.getEmail().getEmail() : null
         );
+    }
+
+    // PARA O DESKTOP
+    public boolean jaExisteAdministrador() {
+        return usuarioRepository.findByPerfil("a").stream().findAny().isPresent();
+    }
+
+    public Usuario criarAdministradorInicial(UsuarioRequest entrada) {
+        if (!"a".equalsIgnoreCase(entrada.perfil())) {
+            throw new AccessDeniedException("Este endpoint só pode criar administradores.");
+        }
+
+        if (jaExisteAdministrador()) {
+            throw new AccessDeniedException("Já existe um administrador cadastrado.");
+        }
+
+        if (usuarioRepository.findByEmail(entrada.email()).isPresent()) {
+            throw new RuntimeException("Este e-mail já está em uso.");
+        }
+
+        Usuario usuario = new Usuario(entrada);
+        usuario.setSenha(entrada.senha());
+        return usuarioRepository.save(usuario);
     }
 }

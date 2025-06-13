@@ -7,7 +7,7 @@ import Consulta from "./pages/Consulta";
 import AgendamentoConsulta from "./pages/AgendamentoConsulta";
 import Login from "./pages/Login";
 import EditarPerfil from "./pages/EditarPerfil";
-
+import CadastroEmpresa from "./pages/CadastroEmpresa";
 import ProtectedLayout from "./layouts/ProtectedLayout";
 
 function PrivateRoute({ children }) {
@@ -36,6 +36,9 @@ export default function AppRoutes() {
         >
           <Route index element={<Consulta />} />
           <Route path="editar-perfil" element={<EditarPerfil />} />
+
+          <Route path="cadastro-empresa" element={<CadastroEmpresa />} />
+
           <Route path="agendamento-consulta" element={<AgendamentoConsulta />} />
           <Route path="agendamento-consulta/:id" element={<AgendamentoConsulta />} />
         </Route>

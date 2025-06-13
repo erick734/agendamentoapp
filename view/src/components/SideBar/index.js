@@ -1,8 +1,13 @@
 import React from 'react';
 import { Link } from "react-router-dom";
+import { useSelector } from 'react-redux';
+import { selectUser } from '../../redux/authSlice';
 import styles from "./sidebar.module.css";
 
 export default function SideBar({ expanded, setExpanded }) {
+
+  const user = useSelector(selectUser);
+
   return (
     <>
       <button 
@@ -19,7 +24,6 @@ export default function SideBar({ expanded, setExpanded }) {
       ></div>
 
       <aside className={`${styles.sidebar} ${expanded ? styles.sidebarOpen : ''}`}>
-        
         <div className={styles.sidebarHeader}>
           <img
             src="https://www.mg.senac.br/programasenacdegratuidade/assets/img/senac_logo_branco.png"
@@ -33,7 +37,6 @@ export default function SideBar({ expanded, setExpanded }) {
             &times;
           </button>
         </div>
-
         <ul className={styles.navList}>
           <li>
             <Link className={styles.navLink} to="/" onClick={() => setExpanded(false)}>
@@ -47,8 +50,16 @@ export default function SideBar({ expanded, setExpanded }) {
               <span>Editar Perfil</span>
             </Link>
           </li>
+          
+          {user?.perfil === 'a' && (
+            <li>
+              <Link className={styles.navLink} to="/cadastro-empresa" onClick={() => setExpanded(false)}>
+                <i className="bi bi-building-fill-add"></i>
+                <span>Cadastrar Empresa</span>
+              </Link>
+            </li>
+          )}
         </ul>
-
       </aside>
     </>
   );

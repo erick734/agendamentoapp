@@ -7,8 +7,6 @@ import java.util.List;
 
 @Repository
 public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
-
     List<Consulta> findByIdPaciente(Long idPaciente);
-
     List<Consulta> findByIdMedico(Long idMedico);
 }

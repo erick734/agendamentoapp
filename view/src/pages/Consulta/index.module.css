@@ -1,0 +1,84 @@
+.pageCard {
+  background-color: white;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  padding: 2rem 2.5rem;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.consultaList {
+  list-style: none;
+  padding: 0;
+}
+
+.consultaItem {
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.consultaItem:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.consultaDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.info p {
+  margin-bottom: 0.5rem;
+  color: #495057;
+}
+
+.info p:last-child {
+  margin-bottom: 0;
+}
+
+.statusBadge {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.5em 0.9em;
+  border-radius: 50rem;
+  text-transform: uppercase;
+}
+
+.statusAguardando {
+  color: #664d03;
+  background-color: #fff3cd;
+}
+
+.statusAprovada {
+  color: #0f5132;
+  background-color: #d1e7dd;
+}
+
+.statusCancelada, .statusRejeitada {
+  color: #58151c;
+  background-color: #f8d7da;
+}
+
+.actionsContainer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f3f5;
+  text-align: right;
+}

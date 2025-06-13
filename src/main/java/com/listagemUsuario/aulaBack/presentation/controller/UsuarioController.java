@@ -116,4 +116,17 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // PARA O DESKTOP
+    @PostMapping("/admin-inicial")
+    @Operation(summary = "Cadastrar o primeiro administrador", description = "Endpoint exclusivo para a criação inicial do admin pelo desktop")
+    public ResponseEntity<?> cadastrarAdminInicial(@RequestBody UsuarioRequest usuarioRequest) {
+        try {
+            var adminCriado = usuarioService.criarAdministradorInicial(usuarioRequest);
+            return ResponseEntity.ok(adminCriado);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao criar administrador: " + e.getMessage());
+        }
+    }
+
 }

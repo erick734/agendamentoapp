@@ -78,7 +78,7 @@ export default function Cadastro() {
 
         <form onSubmit={cadastrarUsuario} className="mt-3">
           <div className="mb-3">
-            <label className="form-label fw-bold">Usuário (será seu login/email)</label>
+            <label className="form-label fw-bold">E-mail (será seu login de acesso)</label>
             <input
               type="email"
               className="form-control form-control-lg"
@@ -151,7 +151,6 @@ export default function Cadastro() {
             >
               <option value="p">Paciente</option>
               <option value="m">Médico</option>
-              <option value="a">Administrador</option>
             </select>
           </div>
 
