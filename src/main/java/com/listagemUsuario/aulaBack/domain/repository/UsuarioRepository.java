@@ -21,4 +21,4 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     List<Usuario> findByPerfil(String perfil);
 
     List<Usuario> findByPerfilAndEmpresaId(String perfil, Long empresaId);
-}
+} // teste de upload
